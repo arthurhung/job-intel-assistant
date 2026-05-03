@@ -78,7 +78,10 @@ It also includes crawler actions that import normalized jobs through the same pi
 - `remoteok`: remote jobs from the public Remote OK API
 - `himalayas`: remote jobs from the public Himalayas API
 - `arbeitnow`: remote and Europe-focused jobs from the public Arbeitnow API
-- `yourator` / `taiwan`: Taiwan startup and digital jobs from Yourator
+- `taiwan`: Taiwan source aggregate across Yourator, Cake, and TaiwanJobs
+- `yourator`: Taiwan startup and digital jobs from Yourator
+- `cake`: Taiwan jobs from Cake
+- `taiwanjobs`: Taiwan public job listings from TaiwanJobs OpenData
 
 ## Telegram Notifications
 

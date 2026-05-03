@@ -3,6 +3,7 @@ from __future__ import annotations
 import html
 import json
 import re
+import ssl
 import urllib.request
 from datetime import UTC, datetime
 from typing import Any
@@ -15,6 +16,25 @@ def fetch_json(url: str, *, timeout: int = 20) -> Any:
     request = urllib.request.Request(url, headers={"User-Agent": DEFAULT_USER_AGENT})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8", errors="replace"))
+
+
+def fetch_text(
+    url: str,
+    *,
+    timeout: int = 20,
+    accept: str = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    verify_ssl: bool = True,
+) -> str:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": DEFAULT_USER_AGENT,
+            "Accept": accept,
+        },
+    )
+    context = None if verify_ssl else ssl._create_unverified_context()
+    with urllib.request.urlopen(request, timeout=timeout, context=context) as response:
+        return response.read().decode("utf-8", errors="replace")
 
 
 def clean_html(value: str) -> str:
