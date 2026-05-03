@@ -3,10 +3,7 @@ from __future__ import annotations
 from job_intel.models import JobPosting
 
 
-REMOTE_SOURCES = {"himalayas", "remoteok", "remotive"}
-
-REMOTE_KEYWORDS = (
-    "remote",
+OPEN_REMOTE_LOCATIONS = (
     "work from home",
     "wfh",
     "worldwide",
@@ -67,24 +64,23 @@ def is_taiwan_or_remote_job(
     description: str = "",
     title: str = "",
 ) -> bool:
-    normalized_source = source.strip().lower()
-    if normalized_source in REMOTE_SOURCES:
+    if _has_taiwan_signal(location=location, description=description, title=title):
         return True
+    return _is_open_remote_location(location)
 
-    location_and_title = " ".join([location, title]).lower()
+
+def _has_taiwan_signal(*, location: str, description: str, title: str) -> bool:
     full_text = " ".join([location, title, description]).lower()
-    description_remote_phrases = (
-        "fully remote",
-        "remote work",
-        "work remotely",
-        "work from home",
-        "wfh",
-    )
-    return (
-        any(keyword in full_text for keyword in TAIWAN_KEYWORDS)
-        or any(keyword in location_and_title for keyword in REMOTE_KEYWORDS)
-        or any(keyword in full_text for keyword in description_remote_phrases)
-    )
+    return any(keyword in full_text for keyword in TAIWAN_KEYWORDS)
+
+
+def _is_open_remote_location(location: str) -> bool:
+    normalized = location.strip().lower()
+    if not normalized:
+        return False
+    if normalized == "remote":
+        return True
+    return any(keyword in normalized for keyword in OPEN_REMOTE_LOCATIONS)
 
 
 def filter_taiwan_or_remote_jobs(jobs: list[JobPosting]) -> list[JobPosting]:
