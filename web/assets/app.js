@@ -15,13 +15,17 @@ function App() {
   const [minScore, setMinScore] = useState(70);
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
+  const [crawlerSources, setCrawlerSources] = useState(["sample"]);
+  const [crawlerSource, setCrawlerSource] = useState("sample");
   const [notifyTelegram, setNotifyTelegram] = useState(false);
   const [telegramLimit, setTelegramLimit] = useState(5);
   const [loading, setLoading] = useState(false);
+  const [crawling, setCrawling] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     loadJobs();
+    loadCrawlers();
   }, []);
 
   const filteredMatches = useMemo(() => {
@@ -53,6 +57,36 @@ function App() {
     const response = await fetch("/api/jobs");
     const data = await response.json();
     setJobs(data);
+  }
+
+  async function loadCrawlers() {
+    const response = await fetch("/api/crawlers");
+    const data = await response.json();
+    const sources = data.sources || ["sample"];
+    setCrawlerSources(sources);
+    setCrawlerSource((current) => (sources.includes(current) ? current : sources[0] || "sample"));
+  }
+
+  async function runCrawl() {
+    setCrawling(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/crawl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: crawlerSource }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Crawl request failed");
+      }
+      await loadJobs();
+      setMessage(`Imported ${data.imported_count} job(s) from ${data.source}.`);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setCrawling(false);
+    }
   }
 
   async function runMatch() {
@@ -105,6 +139,11 @@ function App() {
         setNotifyTelegram,
         telegramLimit,
         setTelegramLimit,
+        crawlerSources,
+        crawlerSource,
+        setCrawlerSource,
+        crawling,
+        runCrawl,
         loading,
         runMatch,
       }),
@@ -155,6 +194,30 @@ function ControlPanel(props) {
   return e(
     "aside",
     { className: "control-panel" },
+    e("label", { className: "field-label", htmlFor: "crawler-source" }, "Crawler source"),
+    e(
+      "div",
+      { className: "action-row" },
+      e(
+        "select",
+        {
+          id: "crawler-source",
+          value: props.crawlerSource,
+          onChange: (event) => props.setCrawlerSource(event.target.value),
+        },
+        props.crawlerSources.map((source) => e("option", { key: source, value: source }, source))
+      ),
+      e(
+        "button",
+        {
+          className: "secondary-button",
+          type: "button",
+          onClick: props.runCrawl,
+          disabled: props.crawling,
+        },
+        props.crawling ? "Crawling..." : "Run crawl"
+      )
+    ),
     e("label", { className: "field-label", htmlFor: "resume" }, "Resume text"),
     e("textarea", {
       id: "resume",
@@ -262,7 +325,7 @@ function MatchList({ matches, selectedJob, setSelectedJob }) {
           "span",
           { className: "match-main" },
           e("strong", null, item.title),
-          e("small", null, `${item.company} · ${item.location || "Remote/unspecified"}`)
+          e("small", null, `${item.company} - ${item.location || "Remote/unspecified"}`)
         ),
         e("span", { className: "score" }, item.score.toFixed(1))
       )
@@ -284,7 +347,7 @@ function JobDetail({ job }) {
     "article",
     { className: "detail-panel" },
     e("div", { className: "detail-header" }, e("h2", null, job.title), e("span", null, job.score.toFixed(1))),
-    e("p", { className: "company-line" }, `${job.company} · ${job.location || "Remote/unspecified"}`),
+    e("p", { className: "company-line" }, `${job.company} - ${job.location || "Remote/unspecified"}`),
     e(SkillGroup, { title: "Matched skills", skills: job.matched_skills, tone: "matched" }),
     e(SkillGroup, { title: "Missing skills", skills: job.missing_skills, tone: "missing" }),
     e("h3", null, "Summary"),

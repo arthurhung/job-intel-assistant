@@ -10,7 +10,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from job_intel.crawlers import available_crawlers, crawl_jobs
 from job_intel.db import connect
+from job_intel.importer import upsert_jobs
 from job_intel.matcher import match_jobs
 from job_intel.models import MatchResult
 from job_intel.telegram import TelegramConfigError, send_match_digest
@@ -47,6 +49,16 @@ class MatchResponse(BaseModel):
     notified_count: int | None = None
 
 
+class CrawlRequest(BaseModel):
+    source: str = "sample"
+
+
+class CrawlResponse(BaseModel):
+    source: str
+    imported_count: int
+    available_sources: list[str]
+
+
 app = FastAPI(title="Job Intel Assistant", version="0.1.0")
 
 
@@ -71,6 +83,28 @@ def list_jobs(
             params.append(min_posted_at)
         query += " ORDER BY posted_at DESC, updated_at DESC"
         return [dict(row) for row in conn.execute(query, params).fetchall()]
+
+
+@app.get("/api/crawlers")
+def list_crawlers() -> dict[str, list[str]]:
+    return {"sources": available_crawlers()}
+
+
+@app.post("/api/crawl", response_model=CrawlResponse)
+def run_crawl(request: CrawlRequest) -> CrawlResponse:
+    try:
+        jobs = crawl_jobs(request.source)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    with connect(DEFAULT_DB) as conn:
+        imported_count = upsert_jobs(conn, jobs)
+
+    return CrawlResponse(
+        source=request.source,
+        imported_count=imported_count,
+        available_sources=available_crawlers(),
+    )
 
 
 @app.post("/api/matches", response_model=MatchResponse)

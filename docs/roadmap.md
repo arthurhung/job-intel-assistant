@@ -37,11 +37,21 @@
 
 目標：從手動 CSV 匯入，升級成自動蒐集職缺。
 
+狀態：已完成 adapter 架構與 sample crawler。
+
 - 建立 `crawler` interface
-- 先支援 1 個職缺來源，例如 104、Cake、Yourator，或公司 career page
+- 支援 CLI：`python -m job_intel crawl --source sample`
+- 支援 API：`POST /api/crawl`
+- Dashboard 可手動觸發 sample crawler
 - 正規化欄位：source、external_id、title、company、location、url、description、salary、posted_at
 - 用 `source + external_id` 做去重
 - 保留 raw description，方便之後做 LLM enrichment
+
+後續可擴充：
+
+- 先支援 1 個真實職缺來源，例如 Cake、Yourator，或公司 career page
+- 加入 crawler error handling 與 rate limit
+- 儲存 crawl run history，記錄每次匯入數量與錯誤
 
 ## Phase 4 - LLM Job Analysis
 

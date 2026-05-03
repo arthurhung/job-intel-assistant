@@ -19,6 +19,7 @@ The current version is a CLI MVP. It focuses on the core data flow before adding
 ```powershell
 python -m pip install -e .
 python -m job_intel import-jobs --csv data\sample_jobs.csv
+python -m job_intel crawl --source sample
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
 
@@ -37,6 +38,8 @@ http://127.0.0.1:8000
 ```
 
 The dashboard lets you paste resume text, run matching against imported jobs, filter by score/skill/company, inspect matched and missing skills, and optionally send a Telegram digest.
+
+It also includes a sample crawler action that imports normalized jobs through the same pipeline real crawler adapters will use later.
 
 ## Telegram Notifications
 
@@ -72,7 +75,7 @@ See [docs/roadmap.md](docs/roadmap.md).
 
 Planned milestones:
 
-- Crawler adapters for job sources
+- Real crawler adapters for job sources
 - LLM-based job analysis
 - Airflow DAG for scheduled ETL and notifications
 - Docker Compose and Kubernetes-ready deployment

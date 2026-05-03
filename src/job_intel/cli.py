@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from job_intel.crawlers import available_crawlers, crawl_jobs
 from job_intel.db import connect
 from job_intel.importer import read_jobs_csv, upsert_jobs
 from job_intel.matcher import match_jobs
@@ -22,6 +23,9 @@ def main(argv: list[str] | None = None) -> int:
     import_parser = subparsers.add_parser("import-jobs", help="Import jobs from a CSV file")
     import_parser.add_argument("--csv", required=True, help="Path to jobs CSV")
 
+    crawl_parser = subparsers.add_parser("crawl", help="Crawl jobs from a configured source")
+    crawl_parser.add_argument("--source", default="sample", choices=available_crawlers(), help="Crawler source")
+
     match_parser = subparsers.add_parser("match", help="Match imported jobs against a resume")
     match_parser.add_argument("--resume", required=True, help="Path to resume .pdf or .txt")
     match_parser.add_argument("--out", default="reports/match_report.md", help="Markdown report path")
@@ -39,6 +43,13 @@ def main(argv: list[str] | None = None) -> int:
             jobs = read_jobs_csv(Path(args.csv))
             count = upsert_jobs(conn, jobs)
         print(f"Imported {count} jobs into {db_path}")
+        return 0
+
+    if args.command == "crawl":
+        jobs = crawl_jobs(args.source)
+        with connect(db_path) as conn:
+            count = upsert_jobs(conn, jobs)
+        print(f"Crawled and imported {count} jobs from {args.source} into {db_path}")
         return 0
 
     if args.command == "match":
