@@ -1,7 +1,7 @@
 x-airflow-common: &airflow-common
   build:
-    context: .
-    dockerfile: Dockerfile.airflow
+    context: ..
+    dockerfile: airflow/Dockerfile
   image: job-intel-airflow:latest
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -24,8 +24,8 @@ x-airflow-common: &airflow-common
     TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
   volumes:
     - ./dags:/opt/airflow/dags
-    - ./data:/opt/airflow/data
-    - ./reports:/opt/airflow/reports
+    - ../data:/opt/airflow/data
+    - ../reports:/opt/airflow/reports
     - ./logs:/opt/airflow/logs
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:

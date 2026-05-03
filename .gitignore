@@ -11,8 +11,10 @@ __pycache__/
 .venv/
 .env
 .env.*
-!.env.airflow.example
+!.env.example
+!airflow/.env.example
 logs/
-airflow/
+airflow/.env
+airflow/logs/
 dist/
 build/

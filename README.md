@@ -92,9 +92,9 @@ Project structure notes are in [docs/architecture.md](docs/architecture.md).
 
 Docker Compose files for running Airflow locally:
 
-- [Dockerfile.airflow](Dockerfile.airflow)
-- [docker-compose.airflow.yml](docker-compose.airflow.yml)
-- [.env.airflow.example](.env.airflow.example)
+- [airflow/Dockerfile](airflow/Dockerfile)
+- [airflow/docker-compose.yml](airflow/docker-compose.yml)
+- [airflow/.env.example](airflow/.env.example)
 
 Planned milestones:
 

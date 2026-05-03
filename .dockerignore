@@ -4,7 +4,8 @@ __pycache__/
 *.egg-info/
 .venv/
 .env
-airflow/
+airflow/.env
+airflow/logs/
 logs/
 data/*.sqlite3
 data/*.sqlite3-*

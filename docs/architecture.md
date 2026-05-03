@@ -25,7 +25,7 @@ Airflow DAG
 | `job_intel.pipeline` | End-to-end crawl, match, report, notify workflow |
 | `job_intel.db` | SQLite connection and schema initialization |
 | `job_intel.crawlers` | Pluggable crawler adapters |
-| `dags/job_intel_daily.py` | Airflow scheduling wrapper around the pipeline |
+| `airflow/dags/job_intel_daily.py` | Airflow scheduling wrapper around the pipeline |
 
 ## Design Notes
 

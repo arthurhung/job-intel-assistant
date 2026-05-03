@@ -3,7 +3,7 @@
 The project includes an Airflow-ready DAG at:
 
 ```text
-dags/job_intel_daily.py
+airflow/dags/job_intel_daily.py
 ```
 
 The Docker Compose setup follows Apache Airflow's local Docker quick-start shape: it is for local learning and portfolio demos, not production deployment.
@@ -33,7 +33,7 @@ python -m job_intel run-pipeline --source remotive --resume C:\path\to\resume.pd
 Copy the example environment file:
 
 ```powershell
-Copy-Item .env.airflow.example .env.airflow
+Copy-Item airflow\.env.example airflow\.env
 ```
 
 Create a resume file that will be mounted into the Airflow containers:
@@ -45,13 +45,13 @@ Copy-Item examples\resume.txt data\resume.txt
 Initialize Airflow:
 
 ```powershell
-docker compose --env-file .env.airflow -f docker-compose.airflow.yml up airflow-init
+docker compose --env-file airflow\.env -f airflow\docker-compose.yml up airflow-init
 ```
 
 Start Airflow:
 
 ```powershell
-docker compose --env-file .env.airflow -f docker-compose.airflow.yml up --build
+docker compose --env-file airflow\.env -f airflow\docker-compose.yml up --build
 ```
 
 Open the Airflow UI:
@@ -71,13 +71,13 @@ Then find the `job_intel_daily` DAG, unpause it, and trigger it manually.
 To stop the containers:
 
 ```powershell
-docker compose --env-file .env.airflow -f docker-compose.airflow.yml down
+docker compose --env-file airflow\.env -f airflow\docker-compose.yml down
 ```
 
 To fully reset Airflow metadata:
 
 ```powershell
-docker compose --env-file .env.airflow -f docker-compose.airflow.yml down --volumes
+docker compose --env-file airflow\.env -f airflow\docker-compose.yml down --volumes
 ```
 
 ## Why This Shape
