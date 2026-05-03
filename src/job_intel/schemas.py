@@ -48,7 +48,7 @@ class MatchRunResponse(BaseModel):
 
 
 class CrawlRequest(BaseModel):
-    source: str = "sample"
+    source: str = "remoteok"
 
 
 class CrawlResponse(BaseModel):

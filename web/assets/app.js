@@ -17,8 +17,8 @@ function App() {
   const [minScore, setMinScore] = useState(70);
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-  const [crawlerSources, setCrawlerSources] = useState(["sample"]);
-  const [crawlerSource, setCrawlerSource] = useState("sample");
+  const [crawlerSources, setCrawlerSources] = useState(["remoteok"]);
+  const [crawlerSource, setCrawlerSource] = useState("remoteok");
   const [notifyTelegram, setNotifyTelegram] = useState(false);
   const [telegramLimit, setTelegramLimit] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -66,9 +66,9 @@ function App() {
   async function loadCrawlers() {
     const response = await fetch("/api/crawlers");
     const data = await response.json();
-    const sources = data.sources || ["sample"];
+    const sources = data.sources || ["remoteok"];
     setCrawlerSources(sources);
-    setCrawlerSource((current) => (sources.includes(current) ? current : sources[0] || "sample"));
+    setCrawlerSource((current) => (sources.includes(current) ? current : sources[0] || "remoteok"));
   }
 
   async function loadMatchRuns() {

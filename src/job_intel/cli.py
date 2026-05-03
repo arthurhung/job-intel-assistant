@@ -37,7 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     import_parser.set_defaults(handler=handle_import_jobs)
 
     crawl_parser = subparsers.add_parser("crawl", help="Crawl jobs from a configured source")
-    crawl_parser.add_argument("--source", default="sample", choices=available_crawlers(), help="Crawler source")
+    crawl_parser.add_argument("--source", default="remoteok", choices=available_crawlers(), help="Crawler source")
     crawl_parser.set_defaults(handler=handle_crawl)
 
     match_parser = subparsers.add_parser("match", help="Match imported jobs against a resume")

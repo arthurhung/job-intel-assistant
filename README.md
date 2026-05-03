@@ -18,8 +18,6 @@ The current version is a CLI MVP. It focuses on the core data flow before adding
 
 ```powershell
 python -m pip install -e .
-python -m job_intel import-jobs --csv data\sample_jobs.csv
-python -m job_intel crawl --source sample
 python -m job_intel crawl --source remoteok
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
@@ -51,7 +49,6 @@ The dashboard lets you upload or paste resume text, run matching against importe
 
 It also includes crawler actions that import normalized jobs through the same pipeline:
 
-- `sample`: deterministic local sample jobs for testing
 - `remotive`: remote jobs from the public Remotive API
 - `remoteok`: remote jobs from the public Remote OK API
 - `himalayas`: remote jobs from the public Himalayas API
