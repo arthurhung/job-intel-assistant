@@ -33,7 +33,7 @@ def job_intel_daily() -> None:
             raise ValueError("JOB_INTEL_RESUME_PATH must point to a .pdf or .txt resume.")
 
         result = run_pipeline(
-            source=os.getenv("JOB_INTEL_CRAWLER_SOURCE", "remotive"),
+            source=os.getenv("JOB_INTEL_CRAWLER_SOURCE", "taiwan"),
             resume_path=Path(resume_path),
             db_path=Path(os.getenv("JOB_INTEL_DB_PATH", "data/job_intel.sqlite3")),
             report_path=Path(os.getenv("JOB_INTEL_REPORT_PATH", "reports/match_report.md")),

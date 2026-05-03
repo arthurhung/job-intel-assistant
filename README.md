@@ -1,18 +1,19 @@
 # Job Intel Assistant
 
-A side-project job intelligence assistant for importing job postings, matching them against a resume, and sending high-score opportunities to Telegram.
+A scheduled job intelligence assistant that crawls Taiwan and open-remote job sources, ranks roles against a resume, and sends high-signal opportunities to Telegram.
 
-The current version is a CLI MVP. It focuses on the core data flow before adding crawlers, LLM analysis, Airflow, and Kubernetes deployment.
+The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow daily, filters out low-signal roles, and pushes only relevant opportunities to Telegram.
 
 ## What It Does
 
-- Imports job postings from CSV
+- Crawls Taiwan and open-remote job sources
 - Stores normalized jobs in SQLite
 - Reads a resume from PDF or TXT
 - Extracts known skills from job descriptions and resume text
 - Scores job-resume matches
 - Writes a Markdown match report
 - Sends top matches to Telegram
+- Runs as a scheduled Airflow pipeline with Docker Compose
 
 ## Quick Start
 
@@ -27,10 +28,15 @@ Run the full local pipeline:
 
 ```powershell
 python -m job_intel run-pipeline `
-  --source remotive `
+  --source taiwan `
   --resume C:\path\to\resume.pdf `
-  --out reports\match_report.md
+  --out reports\match_report.md `
+  --notify-telegram `
+  --telegram-min-score 70 `
+  --telegram-limit 5
 ```
+
+For daily automation, run the Airflow Docker setup and enable Telegram notification in `airflow/.env`.
 
 ## Web Dashboard
 
@@ -92,10 +98,11 @@ $env:TELEGRAM_BOT_TOKEN="your-bot-token"
 $env:TELEGRAM_CHAT_ID="your-chat-id"
 ```
 
-Run matching with Telegram enabled:
+Run the full crawler + matcher pipeline with Telegram enabled:
 
 ```powershell
-python -m job_intel match `
+python -m job_intel run-pipeline `
+  --source taiwan `
   --resume C:\path\to\resume.pdf `
   --out reports\match_report.md `
   --notify-telegram `
@@ -127,11 +134,11 @@ Docker Compose files for running Airflow locally:
 
 Planned milestones:
 
-- Additional crawler adapters and source health tracking
+- Notification deduplication so the same job is not pushed every day
+- Source health tracking for crawler failures
 - LLM-based job analysis
-- Airflow DAG for scheduled ETL and notifications
-- Docker Compose and Kubernetes-ready deployment
+- Kubernetes-ready deployment
 
 ## Portfolio Positioning
 
-This project is intended to demonstrate backend development, data pipeline design, resume-job matching, notification automation, and production-minded deployment.
+This project is intended to demonstrate backend development, data pipeline design, scheduled automation, resume-job matching, Telegram notification workflows, and production-minded deployment.
