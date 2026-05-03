@@ -3,7 +3,10 @@ name = "job-intel-assistant"
 version = "0.1.0"
 description = "A small job intelligence assistant for importing, matching, and ranking job postings."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

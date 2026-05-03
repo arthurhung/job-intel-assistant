@@ -22,6 +22,22 @@ python -m job_intel import-jobs --csv data\sample_jobs.csv
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
 
+## Web Dashboard
+
+Run the FastAPI app and open the dashboard:
+
+```powershell
+python -m uvicorn job_intel.api:app --reload
+```
+
+Then visit:
+
+```text
+http://127.0.0.1:8000
+```
+
+The dashboard lets you paste resume text, run matching against imported jobs, filter by score/skill/company, inspect matched and missing skills, and optionally send a Telegram digest.
+
 ## Telegram Notifications
 
 Create a Telegram bot with `@BotFather`, send the bot a message, then set these environment variables:
@@ -59,7 +75,6 @@ Planned milestones:
 - Crawler adapters for job sources
 - LLM-based job analysis
 - Airflow DAG for scheduled ETL and notifications
-- Web dashboard
 - Docker Compose and Kubernetes-ready deployment
 
 ## Portfolio Positioning
