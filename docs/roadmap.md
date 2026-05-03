@@ -69,6 +69,8 @@
 
 目標：把職缺蒐集、清洗、分析、通知變成可觀測、可重跑的資料管線。
 
+狀態：已完成 Airflow-ready DAG 與共用 pipeline function。
+
 建議 DAG：
 
 ```text
@@ -86,6 +88,7 @@ crawl_jobs
 - task retry 與失敗觀測
 - backfill 歷史職缺資料
 - 將 Telegram 通知作為 pipeline 最後一段
+- CLI 可直接執行完整 pipeline：`python -m job_intel run-pipeline`
 
 ## Phase 6 - Web Dashboard
 

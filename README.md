@@ -24,6 +24,15 @@ python -m job_intel crawl --source remotive
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
 
+Run the full local pipeline:
+
+```powershell
+python -m job_intel run-pipeline `
+  --source remotive `
+  --resume C:\path\to\resume.pdf `
+  --out reports\match_report.md
+```
+
 ## Web Dashboard
 
 Run the FastAPI app and open the dashboard:
@@ -76,6 +85,8 @@ source,external_id,title,company,location,url,description,salary,posted_at
 ## Roadmap
 
 See [docs/roadmap.md](docs/roadmap.md).
+
+Airflow scheduling notes are in [docs/airflow.md](docs/airflow.md).
 
 Planned milestones:
 

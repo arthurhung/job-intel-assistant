@@ -7,6 +7,7 @@ from job_intel.crawlers import available_crawlers, crawl_jobs
 from job_intel.db import connect
 from job_intel.importer import read_jobs_csv, upsert_jobs
 from job_intel.matcher import match_jobs
+from job_intel.pipeline import run_pipeline
 from job_intel.report import write_markdown_report
 from job_intel.resume import load_resume_text
 from job_intel.telegram import TelegramConfigError, send_match_digest
@@ -34,6 +35,14 @@ def main(argv: list[str] | None = None) -> int:
     match_parser.add_argument("--telegram-chat-id", help="Telegram chat ID. Defaults to TELEGRAM_CHAT_ID")
     match_parser.add_argument("--telegram-min-score", type=float, default=70.0, help="Minimum score to notify")
     match_parser.add_argument("--telegram-limit", type=int, default=5, help="Maximum matches to send")
+
+    pipeline_parser = subparsers.add_parser("run-pipeline", help="Crawl, match, report, and optionally notify")
+    pipeline_parser.add_argument("--source", default="remotive", choices=available_crawlers(), help="Crawler source")
+    pipeline_parser.add_argument("--resume", required=True, help="Path to resume .pdf or .txt")
+    pipeline_parser.add_argument("--out", default="reports/match_report.md", help="Markdown report path")
+    pipeline_parser.add_argument("--notify-telegram", action="store_true", help="Send top matches to Telegram")
+    pipeline_parser.add_argument("--telegram-min-score", type=float, default=70.0, help="Minimum score to notify")
+    pipeline_parser.add_argument("--telegram-limit", type=int, default=5, help="Maximum matches to send")
 
     args = parser.parse_args(argv)
     db_path = Path(args.db)
@@ -70,6 +79,28 @@ def main(argv: list[str] | None = None) -> int:
             except TelegramConfigError as exc:
                 parser.error(str(exc))
             print(f"Sent Telegram digest with {notified} matches")
+        return 0
+
+    if args.command == "run-pipeline":
+        result = run_pipeline(
+            source=args.source,
+            resume_path=Path(args.resume),
+            db_path=db_path,
+            report_path=Path(args.out),
+            notify_telegram=args.notify_telegram,
+            telegram_min_score=args.telegram_min_score,
+            telegram_limit=args.telegram_limit,
+        )
+        print(
+            "Pipeline complete: "
+            f"crawled={result.crawled_count}, "
+            f"imported={result.imported_count}, "
+            f"matches={result.total_matches}, "
+            f"qualified={result.qualified_matches}, "
+            f"notified={result.notified_count or 0}, "
+            f"match_run_id={result.match_run_id}, "
+            f"report={result.report_path}"
+        )
         return 0
 
     return 1

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sqlite3
 import tempfile
 from dataclasses import asdict
 from pathlib import Path
@@ -13,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from job_intel.crawlers import available_crawlers, crawl_jobs
 from job_intel.db import connect
+from job_intel.history import record_match_run
 from job_intel.importer import upsert_jobs
 from job_intel.matcher import match_jobs
 from job_intel.models import MatchResult
@@ -177,7 +177,7 @@ def create_matches(request: MatchRequest) -> MatchResponse:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     with connect(DEFAULT_DB) as conn:
-        match_run_id = _record_match_run(
+        match_run_id = record_match_run(
             conn,
             resume_text=request.resume_text,
             results=results,
@@ -210,38 +210,6 @@ def list_match_runs(limit: Annotated[int, Query(ge=1, le=50)] = 8) -> list[dict]
 
 def _serialize_match(item: MatchResult) -> dict:
     return asdict(item)
-
-
-def _record_match_run(
-    conn: sqlite3.Connection,
-    *,
-    resume_text: str,
-    results: list[MatchResult],
-    min_score: float,
-    notified_count: int | None,
-) -> int:
-    compact_resume = " ".join(resume_text.split())
-    resume_preview = compact_resume[:240]
-    qualified_matches = sum(1 for item in results if item.score >= min_score)
-    cursor = conn.execute(
-        """
-        INSERT INTO match_runs (
-            resume_preview, resume_chars, min_score, total_matches,
-            qualified_matches, notified_count
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-        """,
-        (
-            resume_preview,
-            len(resume_text),
-            min_score,
-            len(results),
-            qualified_matches,
-            notified_count,
-        ),
-    )
-    conn.commit()
-    return int(cursor.lastrowid)
 
 
 if WEB_DIR.exists():
