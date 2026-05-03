@@ -219,40 +219,48 @@ input[type="range"] {
   pointer-events: none;
 }
 
-.primary-button {
-  min-height: 44px;
-  border: 0;
+.primary-button,
+.secondary-button,
+.tertiary-button {
+  min-height: 42px;
   border-radius: 6px;
-  background: var(--accent);
-  color: #fff;
   font-weight: 800;
   cursor: pointer;
+}
+
+.primary-button {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
 }
 
 .primary-button:hover {
   background: var(--accent-dark);
 }
 
-.primary-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
 .secondary-button {
-  min-height: 42px;
   border: 1px solid var(--line);
-  border-radius: 6px;
   background: #18201f;
   color: #fff;
-  font-weight: 800;
-  cursor: pointer;
 }
 
 .secondary-button:hover {
   background: #2b3634;
 }
 
-.secondary-button:disabled {
+.tertiary-button {
+  border: 1px solid var(--accent);
+  background: #f7fcfa;
+  color: var(--accent-dark);
+}
+
+.tertiary-button:hover {
+  background: #e9f7f3;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.tertiary-button:disabled {
   cursor: not-allowed;
   opacity: 0.58;
 }

@@ -33,9 +33,31 @@ python -m job_intel run-pipeline `
 
 ## Web Dashboard
 
-Run the FastAPI app and open the dashboard:
+Run the FastAPI API server:
 
 ```powershell
+python -m uvicorn job_intel.api:app --reload
+```
+
+Run the React dashboard in development mode:
+
+```powershell
+npm.cmd --prefix web install
+npm.cmd --prefix web run dev
+```
+
+Then visit:
+
+```text
+http://127.0.0.1:5173
+```
+
+The Vite dev server proxies `/api` requests to FastAPI at `http://127.0.0.1:8000`.
+
+To serve the built dashboard from FastAPI:
+
+```powershell
+npm.cmd --prefix web run build
 python -m uvicorn job_intel.api:app --reload
 ```
 

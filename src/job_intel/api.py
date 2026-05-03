@@ -86,13 +86,17 @@ def list_match_runs(limit: Annotated[int, Query(ge=1, le=50)] = 8) -> list[dict]
     return list_match_runs_service(settings.db_path, limit=limit)
 
 
-if settings.web_dir.exists():
-    app.mount("/assets", StaticFiles(directory=settings.web_dir / "assets"), name="assets")
+assets_dir = settings.web_dir / "assets"
+if assets_dir.exists():
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
 
 @app.get("/")
 def dashboard() -> FileResponse:
     index = settings.web_dir / "index.html"
     if not index.exists():
-        raise HTTPException(status_code=404, detail="Dashboard assets were not found.")
+        raise HTTPException(
+            status_code=404,
+            detail="Dashboard build was not found. Run `npm.cmd --prefix web run build` first.",
+        )
     return FileResponse(index)

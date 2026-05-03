@@ -9,6 +9,8 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
+node_modules/
+web/node_modules/
 .env
 .env.*
 !.env.example
@@ -17,4 +19,5 @@ logs/
 airflow/.env
 airflow/logs/
 dist/
+web/dist/
 build/
