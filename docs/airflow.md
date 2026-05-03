@@ -6,6 +6,8 @@ The project includes an Airflow-ready DAG at:
 dags/job_intel_daily.py
 ```
 
+The Docker Compose setup follows Apache Airflow's local Docker quick-start shape: it is for local learning and portfolio demos, not production deployment.
+
 The DAG calls the same reusable Python pipeline as the CLI:
 
 ```powershell
@@ -25,6 +27,58 @@ python -m job_intel run-pipeline --source remotive --resume C:\path\to\resume.pd
 | `JOB_INTEL_TELEGRAM_LIMIT` | `5` | Maximum Telegram items |
 | `TELEGRAM_BOT_TOKEN` | required for notification | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | required for notification | Telegram chat ID |
+
+## Running With Docker Compose
+
+Copy the example environment file:
+
+```powershell
+Copy-Item .env.airflow.example .env.airflow
+```
+
+Create a resume file that will be mounted into the Airflow containers:
+
+```powershell
+Copy-Item examples\resume.txt data\resume.txt
+```
+
+Initialize Airflow:
+
+```powershell
+docker compose --env-file .env.airflow -f docker-compose.airflow.yml up airflow-init
+```
+
+Start Airflow:
+
+```powershell
+docker compose --env-file .env.airflow -f docker-compose.airflow.yml up --build
+```
+
+Open the Airflow UI:
+
+```text
+http://localhost:8080
+```
+
+Default local credentials:
+
+```text
+airflow / airflow
+```
+
+Then find the `job_intel_daily` DAG, unpause it, and trigger it manually.
+
+To stop the containers:
+
+```powershell
+docker compose --env-file .env.airflow -f docker-compose.airflow.yml down
+```
+
+To fully reset Airflow metadata:
+
+```powershell
+docker compose --env-file .env.airflow -f docker-compose.airflow.yml down --volumes
+```
 
 ## Why This Shape
 

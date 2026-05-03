@@ -1,0 +1,13 @@
+.git
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+airflow/
+logs/
+data/*.sqlite3
+data/*.sqlite3-*
+data/*.pdf
+data/*.txt
+reports/*.md

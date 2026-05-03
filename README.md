@@ -88,6 +88,12 @@ See [docs/roadmap.md](docs/roadmap.md).
 
 Airflow scheduling notes are in [docs/airflow.md](docs/airflow.md).
 
+Docker Compose files for running Airflow locally:
+
+- [Dockerfile.airflow](Dockerfile.airflow)
+- [docker-compose.airflow.yml](docker-compose.airflow.yml)
+- [.env.airflow.example](.env.airflow.example)
+
 Planned milestones:
 
 - Real crawler adapters for job sources
