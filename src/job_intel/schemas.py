@@ -54,4 +54,5 @@ class CrawlRequest(BaseModel):
 class CrawlResponse(BaseModel):
     source: str
     imported_count: int
+    filtered_count: int = 0
     available_sources: list[str]

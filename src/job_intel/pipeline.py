@@ -7,6 +7,7 @@ from job_intel.crawlers import crawl_jobs
 from job_intel.db import session
 from job_intel.history import record_match_run
 from job_intel.importer import upsert_jobs
+from job_intel.job_filters import filter_taiwan_or_remote_jobs
 from job_intel.matcher import match_jobs
 from job_intel.report import write_markdown_report
 from job_intel.resume import load_resume_text
@@ -34,7 +35,7 @@ def run_pipeline(
     telegram_min_score: float = 70.0,
     telegram_limit: int = 5,
 ) -> PipelineResult:
-    jobs = crawl_jobs(source)
+    jobs = filter_taiwan_or_remote_jobs(crawl_jobs(source))
     resume_text = load_resume_text(resume_path)
 
     with session(db_path) as conn:

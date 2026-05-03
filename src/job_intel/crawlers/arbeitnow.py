@@ -29,12 +29,16 @@ class ArbeitnowCrawler(JobCrawler):
         if url:
             description = f"{description}\n\nSource: Arbeitnow ({url})".strip()
 
+        location = str(job.get("location") or "").strip()
+        if job.get("remote"):
+            location = f"Remote - {location}" if location else "Remote"
+
         return JobPosting(
             source=self.source,
             external_id=str(job.get("slug") or url),
             title=str(job.get("title") or "").strip(),
             company=str(job.get("company_name") or "").strip(),
-            location=str(job.get("location") or ("Remote" if job.get("remote") else "")).strip(),
+            location=location,
             url=url,
             description=description,
             salary="",

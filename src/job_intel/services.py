@@ -8,6 +8,7 @@ from job_intel.crawlers import available_crawlers, crawl_jobs
 from job_intel.db import session
 from job_intel.history import record_match_run
 from job_intel.importer import upsert_jobs
+from job_intel.job_filters import filter_taiwan_or_remote_jobs, is_taiwan_or_remote_job
 from job_intel.matcher import match_jobs
 from job_intel.models import MatchResult
 from job_intel.resume import load_resume_text
@@ -29,7 +30,16 @@ def list_jobs(db_path: Path, *, min_posted_at: str | None = None) -> list[dict]:
             query += " WHERE posted_at >= ?"
             params.append(min_posted_at)
         query += " ORDER BY posted_at DESC, updated_at DESC"
-        return [dict(row) for row in conn.execute(query, params).fetchall()]
+        return [
+            dict(row)
+            for row in conn.execute(query, params).fetchall()
+            if is_taiwan_or_remote_job(
+                source=row["source"],
+                location=row["location"],
+                description=row["description"],
+                title=row["title"],
+            )
+        ]
 
 
 def parse_resume_bytes(*, filename: str, body: bytes) -> dict:
@@ -59,12 +69,14 @@ def parse_resume_bytes(*, filename: str, body: bytes) -> dict:
 
 
 def run_crawler(db_path: Path, *, source: str) -> dict:
-    jobs = crawl_jobs(source)
+    crawled_jobs = crawl_jobs(source)
+    jobs = filter_taiwan_or_remote_jobs(crawled_jobs)
     with session(db_path) as conn:
         imported_count = upsert_jobs(conn, jobs)
     return {
         "source": source,
         "imported_count": imported_count,
+        "filtered_count": len(crawled_jobs) - len(jobs),
         "available_sources": available_crawlers(),
     }
 

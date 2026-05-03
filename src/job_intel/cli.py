@@ -79,7 +79,9 @@ def handle_crawl(args: argparse.Namespace) -> int:
 
     db_path = Path(args.db)
     result = run_crawler(db_path, source=args.source)
-    print(f"Crawled and imported {result['imported_count']} jobs from {args.source} into {db_path}")
+    filtered = result.get("filtered_count", 0)
+    suffix = f" ({filtered} non-Taiwan/non-remote skipped)" if filtered else ""
+    print(f"Crawled and imported {result['imported_count']} jobs from {args.source} into {db_path}{suffix}")
     return 0
 
 

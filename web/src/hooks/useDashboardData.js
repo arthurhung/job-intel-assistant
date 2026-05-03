@@ -138,8 +138,12 @@ export function useDashboardData() {
         matchResult.notified_count === null || matchResult.notified_count === undefined
           ? ""
           : ` Telegram sent ${matchResult.notified_count} item(s).`;
+      const filtered =
+        crawlResult.filtered_count > 0
+          ? ` Skipped ${crawlResult.filtered_count} non-Taiwan/non-remote job(s).`
+          : "";
       setMessage(
-        `Imported ${crawlResult.imported_count} job(s) from ${crawlResult.source}. Matched ${matchResult.matches.length} job(s).${suffix}`
+        `Imported ${crawlResult.imported_count} job(s) from ${crawlResult.source}.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
       );
     } catch (error) {
       setMessage(error.message);
