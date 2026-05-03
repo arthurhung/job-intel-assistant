@@ -1,0 +1,12 @@
+[project]
+name = "job-intel-assistant"
+version = "0.1.0"
+description = "A small job intelligence assistant for importing, matching, and ranking job postings."
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

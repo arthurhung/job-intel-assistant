@@ -1,0 +1,4 @@
+source,external_id,title,company,location,url,description,salary,posted_at
+sample,job-001,Senior Data Engineer,Alpha Quant Lab,Taipei,https://example.com/jobs/1,"Build Airflow ETL pipelines on AWS S3, ECS, Step Functions, Postgres, Docker. Own data quality, backfills, observability, and batch processing for market data.",Negotiable,2026-05-01
+sample,job-002,Backend Python Engineer,Fintech Platform,Taipei,https://example.com/jobs/2,"Develop Django and Flask REST APIs, integrate Redis and PostgreSQL, maintain Docker deployments, CI/CD, Linux operations, and production monitoring.",Negotiable,2026-05-02
+sample,job-003,AI Data Engineer,AI Workflow Studio,Remote,https://example.com/jobs/3,"Create Python data pipelines, web crawlers, LLM analysis workflows, vector database search, notification automation, and SQL reporting dashboards.",Negotiable,2026-05-03
