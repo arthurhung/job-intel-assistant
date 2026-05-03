@@ -86,7 +86,7 @@ source,external_id,title,company,location,url,description,salary,posted_at
 
 See [docs/roadmap.md](docs/roadmap.md).
 
-Airflow scheduling notes are in [docs/airflow.md](docs/airflow.md).
+Airflow scheduling notes are in [airflow/README.md](airflow/README.md).
 
 Project structure notes are in [docs/architecture.md](docs/architecture.md).
 
