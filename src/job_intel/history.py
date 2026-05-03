@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 import re
+from datetime import UTC, datetime
 
 from job_intel.models import MatchResult
 
@@ -25,9 +26,9 @@ def record_match_run(
         """
         INSERT INTO match_runs (
             resume_preview, resume_chars, min_score, total_matches,
-            qualified_matches, notified_count
+            qualified_matches, notified_count, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             resume_preview,
@@ -36,6 +37,7 @@ def record_match_run(
             len(results),
             qualified_matches,
             notified_count,
+            datetime.now(UTC).isoformat(timespec="seconds"),
         ),
     )
     conn.commit()

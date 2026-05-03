@@ -23,8 +23,18 @@ export function MatchRuns({ runs }) {
 
 function formatDate(value) {
   if (!value) return "-";
+  const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(value);
   const normalized = value.includes("T") ? value : value.replace(" ", "T");
-  const date = new Date(normalized);
+  const timestamp = hasTimezone ? normalized : `${normalized}Z`;
+  const date = new Date(timestamp);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  return new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(new Date(timestamp));
 }
