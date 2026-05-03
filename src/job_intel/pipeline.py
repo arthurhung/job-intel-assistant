@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from job_intel.crawlers import crawl_jobs
-from job_intel.db import connect
+from job_intel.db import session
 from job_intel.history import record_match_run
 from job_intel.importer import upsert_jobs
 from job_intel.matcher import match_jobs
@@ -37,7 +37,7 @@ def run_pipeline(
     jobs = crawl_jobs(source)
     resume_text = load_resume_text(resume_path)
 
-    with connect(db_path) as conn:
+    with session(db_path) as conn:
         imported_count = upsert_jobs(conn, jobs)
         results = match_jobs(conn, resume_text)
 
@@ -51,7 +51,7 @@ def run_pipeline(
             limit=telegram_limit,
         )
 
-    with connect(db_path) as conn:
+    with session(db_path) as conn:
         match_run_id = record_match_run(
             conn,
             resume_text=resume_text,

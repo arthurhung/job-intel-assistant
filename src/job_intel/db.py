@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
+from collections.abc import Iterator
 from pathlib import Path
 
 
@@ -41,3 +43,12 @@ def connect(db_path: Path) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(SCHEMA)
     return conn
+
+
+@contextmanager
+def session(db_path: Path) -> Iterator[sqlite3.Connection]:
+    conn = connect(db_path)
+    try:
+        yield conn
+    finally:
+        conn.close()

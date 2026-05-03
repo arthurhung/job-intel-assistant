@@ -9,6 +9,9 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
 ]
 
+[project.scripts]
+job-intel = "job_intel.cli:main"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 

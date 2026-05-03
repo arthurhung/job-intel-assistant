@@ -88,6 +88,8 @@ See [docs/roadmap.md](docs/roadmap.md).
 
 Airflow scheduling notes are in [docs/airflow.md](docs/airflow.md).
 
+Project structure notes are in [docs/architecture.md](docs/architecture.md).
+
 Docker Compose files for running Airflow locally:
 
 - [Dockerfile.airflow](Dockerfile.airflow)
