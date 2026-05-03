@@ -11,7 +11,7 @@ from job_intel.matcher import match_jobs
 from job_intel.pipeline import run_pipeline
 from job_intel.report import write_markdown_report
 from job_intel.resume import load_resume_text
-from job_intel.telegram import TelegramConfigError, send_match_digest
+from job_intel.telegram import TelegramConfigError, send_match_digest, send_test_message
 
 
 DEFAULT_DB = get_settings().db_path
@@ -47,11 +47,21 @@ def build_parser() -> argparse.ArgumentParser:
     match_parser.set_defaults(handler=handle_match)
 
     pipeline_parser = subparsers.add_parser("run-pipeline", help="Crawl, match, report, and optionally notify")
-    pipeline_parser.add_argument("--source", default="remotive", choices=available_crawlers(), help="Crawler source")
+    pipeline_parser.add_argument("--source", default="taiwan", choices=available_crawlers(), help="Crawler source")
     pipeline_parser.add_argument("--resume", required=True, help="Path to resume .pdf or .txt")
     pipeline_parser.add_argument("--out", default="reports/match_report.md", help="Markdown report path")
     add_telegram_options(pipeline_parser, include_credentials=False)
     pipeline_parser.set_defaults(handler=handle_pipeline)
+
+    telegram_parser = subparsers.add_parser("test-telegram", help="Send a test Telegram message")
+    telegram_parser.add_argument("--telegram-token", help="Telegram bot token. Defaults to TELEGRAM_BOT_TOKEN")
+    telegram_parser.add_argument("--telegram-chat-id", help="Telegram chat ID. Defaults to TELEGRAM_CHAT_ID")
+    telegram_parser.add_argument(
+        "--message",
+        default="Job Intel Assistant Telegram test message.",
+        help="Test message text",
+    )
+    telegram_parser.set_defaults(handler=handle_test_telegram)
 
     return parser
 
@@ -125,4 +135,14 @@ def handle_pipeline(args: argparse.Namespace) -> int:
         f"match_run_id={result.match_run_id}, "
         f"report={result.report_path}"
     )
+    return 0
+
+
+def handle_test_telegram(args: argparse.Namespace) -> int:
+    send_test_message(
+        token=args.telegram_token,
+        chat_id=args.telegram_chat_id,
+        text=args.message,
+    )
+    print("Sent Telegram test message")
     return 0

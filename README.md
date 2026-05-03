@@ -98,6 +98,12 @@ $env:TELEGRAM_BOT_TOKEN="your-bot-token"
 $env:TELEGRAM_CHAT_ID="your-chat-id"
 ```
 
+Verify the credentials:
+
+```powershell
+python -m job_intel test-telegram
+```
+
 Run the full crawler + matcher pipeline with Telegram enabled:
 
 ```powershell

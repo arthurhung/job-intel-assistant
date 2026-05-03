@@ -19,13 +19,22 @@ https://api.telegram.org/bot<TOKEN>/getUpdates
 
 3. Copy `message.chat.id` from the response.
 
-## 3. Run With Environment Variables
+## 3. Send a Test Message
 
 ```powershell
 $env:TELEGRAM_BOT_TOKEN="your-bot-token"
 $env:TELEGRAM_CHAT_ID="your-chat-id"
 
-python -m job_intel match `
+python -m job_intel test-telegram
+```
+
+If the bot and chat ID are correct, you should receive a Telegram message immediately.
+
+## 4. Run the Job Pipeline With Telegram
+
+```powershell
+python -m job_intel run-pipeline `
+  --source taiwan `
   --resume C:\path\to\resume.pdf `
   --out reports\match_report.md `
   --notify-telegram `

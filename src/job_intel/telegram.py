@@ -40,6 +40,22 @@ def send_match_digest(
     return len(selected)
 
 
+def send_test_message(
+    *,
+    token: str | None = None,
+    chat_id: str | None = None,
+    text: str = "Job Intel Assistant Telegram test message.",
+) -> None:
+    token = token or os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        raise TelegramConfigError(
+            "Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID, or pass --telegram-token and --telegram-chat-id."
+        )
+
+    _send_message(token=token, chat_id=chat_id, text=text)
+
+
 def _format_digest(results: list[MatchResult], *, min_score: float) -> str:
     lines = [f"Job Intel matches >= {min_score:.1f}", ""]
     for index, item in enumerate(results, start=1):
