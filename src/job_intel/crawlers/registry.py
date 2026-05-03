@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from job_intel.crawlers.base import JobCrawler
+from job_intel.crawlers.remotive import RemotiveCrawler
 from job_intel.crawlers.sample import SampleCrawler
 from job_intel.models import JobPosting
 
 
 CRAWLERS: dict[str, type[JobCrawler]] = {
+    RemotiveCrawler.source: RemotiveCrawler,
     SampleCrawler.source: SampleCrawler,
     "sample": SampleCrawler,
 }

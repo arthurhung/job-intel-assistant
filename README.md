@@ -20,6 +20,7 @@ The current version is a CLI MVP. It focuses on the core data flow before adding
 python -m pip install -e .
 python -m job_intel import-jobs --csv data\sample_jobs.csv
 python -m job_intel crawl --source sample
+python -m job_intel crawl --source remotive
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
 
@@ -39,7 +40,10 @@ http://127.0.0.1:8000
 
 The dashboard lets you paste resume text, run matching against imported jobs, filter by score/skill/company, inspect matched and missing skills, and optionally send a Telegram digest.
 
-It also includes a sample crawler action that imports normalized jobs through the same pipeline real crawler adapters will use later.
+It also includes crawler actions that import normalized jobs through the same pipeline:
+
+- `sample`: deterministic local sample jobs for testing
+- `remotive`: remote jobs from the public Remotive API
 
 ## Telegram Notifications
 
