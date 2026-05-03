@@ -91,33 +91,30 @@ export function useDashboardData() {
     }
   }
 
-  async function runCrawl() {
-    setCrawling(true);
-    setMessage("");
-    try {
-      const data = await runCrawler(crawlerSource);
-      await loadJobs();
-      setMessage(`Imported ${data.imported_count} job(s) from ${data.source}.`);
-    } catch (error) {
-      setMessage(error.message);
-    } finally {
-      setCrawling(false);
-    }
+  async function crawlSelectedJobs() {
+    const data = await runCrawler(crawlerSource);
+    await loadJobs();
+    return data;
+  }
+
+  async function matchCurrentJobs() {
+    const data = await createMatches({
+      resume_text: resumeText,
+      notify_telegram: notifyTelegram,
+      telegram_min_score: Number(minScore),
+      telegram_limit: Number(telegramLimit),
+    });
+    setMatches(data.matches);
+    setSelectedJob(data.matches[0] || null);
+    await loadMatchRuns();
+    return data;
   }
 
   async function runMatch() {
     setLoading(true);
     setMessage("");
     try {
-      const data = await createMatches({
-        resume_text: resumeText,
-        notify_telegram: notifyTelegram,
-        telegram_min_score: Number(minScore),
-        telegram_limit: Number(telegramLimit),
-      });
-      setMatches(data.matches);
-      setSelectedJob(data.matches[0] || null);
-      await loadMatchRuns();
+      const data = await matchCurrentJobs();
       const suffix =
         data.notified_count === null || data.notified_count === undefined
           ? ""
@@ -131,8 +128,25 @@ export function useDashboardData() {
   }
 
   async function runCrawlAndMatch() {
-    await runCrawl();
-    await runMatch();
+    setCrawling(true);
+    setLoading(true);
+    setMessage("");
+    try {
+      const crawlResult = await crawlSelectedJobs();
+      const matchResult = await matchCurrentJobs();
+      const suffix =
+        matchResult.notified_count === null || matchResult.notified_count === undefined
+          ? ""
+          : ` Telegram sent ${matchResult.notified_count} item(s).`;
+      setMessage(
+        `Imported ${crawlResult.imported_count} job(s) from ${crawlResult.source}. Matched ${matchResult.matches.length} job(s).${suffix}`
+      );
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setCrawling(false);
+      setLoading(false);
+    }
   }
 
   return {
@@ -162,7 +176,6 @@ export function useDashboardData() {
     filteredMatches,
     stats,
     uploadResume,
-    runCrawl,
     runMatch,
     runCrawlAndMatch,
   };

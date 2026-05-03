@@ -3,7 +3,7 @@ export function MatchList({ matches, selectedJob, setSelectedJob }) {
     return (
       <div className="empty-state">
         <strong>No matches yet</strong>
-        <p>Run matching or lower the score threshold.</p>
+        <p>Update jobs and match, or lower the score threshold.</p>
       </div>
     );
   }

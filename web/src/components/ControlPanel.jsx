@@ -16,7 +16,6 @@ export function ControlPanel({
   crawlerSource,
   setCrawlerSource,
   crawling,
-  runCrawl,
   loading,
   runMatch,
   runCrawlAndMatch,
@@ -28,25 +27,20 @@ export function ControlPanel({
       <label className="field-label" htmlFor="crawler-source">
         Crawler source
       </label>
-      <div className="action-row">
-        <select
-          id="crawler-source"
-          value={crawlerSource}
-          onChange={(event) => setCrawlerSource(event.target.value)}
-        >
-          {crawlerSources.map((source) => (
-            <option key={source} value={source}>
-              {source}
-            </option>
-          ))}
-        </select>
-        <button className="secondary-button" type="button" onClick={runCrawl} disabled={isBusy}>
-          {crawling ? "Crawling..." : "Run crawl"}
-        </button>
-      </div>
+      <select
+        id="crawler-source"
+        value={crawlerSource}
+        onChange={(event) => setCrawlerSource(event.target.value)}
+      >
+        {crawlerSources.map((source) => (
+          <option key={source} value={source}>
+            {source}
+          </option>
+        ))}
+      </select>
       <label className="upload-box">
-        <span>{uploadingResume ? "Parsing resume..." : "Upload resume"}</span>
-        <small>{resumeFileName || "PDF or TXT"}</small>
+        <span>{uploadingResume ? "Parsing resume..." : "Upload resume to fill text"}</span>
+        <small>{resumeFileName || "PDF or TXT, then edit below"}</small>
         <input
           type="file"
           accept=".pdf,.txt"
@@ -55,7 +49,7 @@ export function ControlPanel({
         />
       </label>
       <label className="field-label" htmlFor="resume">
-        Resume text
+        Editable resume text
       </label>
       <textarea
         id="resume"
@@ -111,18 +105,18 @@ export function ControlPanel({
       <button
         className="primary-button"
         type="button"
-        onClick={runMatch}
-        disabled={loading || !resumeText.trim()}
+        onClick={runCrawlAndMatch}
+        disabled={isBusy || !resumeText.trim()}
       >
-        {loading ? "Matching..." : "Run match"}
+        {isBusy ? "Updating..." : "Update jobs + match"}
       </button>
       <button
         className="tertiary-button"
         type="button"
-        onClick={runCrawlAndMatch}
-        disabled={isBusy || !resumeText.trim()}
+        onClick={runMatch}
+        disabled={loading || !resumeText.trim()}
       >
-        Crawl + match
+        {loading ? "Matching..." : "Match current jobs"}
       </button>
     </aside>
   );
