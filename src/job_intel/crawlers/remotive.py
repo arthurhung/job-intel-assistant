@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import html
-import json
-import re
 import urllib.parse
-import urllib.request
 
 from job_intel.crawlers.base import JobCrawler
+from job_intel.crawlers.utils import clean_html, fetch_json
 from job_intel.models import JobPosting
 
 
@@ -22,19 +19,13 @@ class RemotiveCrawler(JobCrawler):
 
     def crawl(self) -> list[JobPosting]:
         params = urllib.parse.urlencode({"search": self.search})
-        request = urllib.request.Request(
-            f"{REMOTIVE_API_URL}?{params}",
-            headers={"User-Agent": "job-intel-assistant/0.1"},
-        )
-        with urllib.request.urlopen(request, timeout=20) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-
+        payload = fetch_json(f"{REMOTIVE_API_URL}?{params}")
         jobs = payload.get("jobs", [])[: self.limit]
         return [self._to_posting(job) for job in jobs]
 
     def _to_posting(self, job: dict) -> JobPosting:
         url = str(job.get("url") or "")
-        description = _clean_html(str(job.get("description") or ""))
+        description = clean_html(str(job.get("description") or ""))
         if url:
             description = f"{description}\n\nSource: Remotive ({url})".strip()
 
@@ -49,9 +40,3 @@ class RemotiveCrawler(JobCrawler):
             salary=str(job.get("salary") or "").strip(),
             posted_at=str(job.get("publication_date") or "").split("T")[0],
         )
-
-
-def _clean_html(value: str) -> str:
-    without_tags = re.sub(r"<[^>]+>", " ", value)
-    compact = " ".join(html.unescape(without_tags).split())
-    return compact
