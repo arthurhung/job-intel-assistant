@@ -97,14 +97,14 @@ crawl_jobs
 - 依技能、公司、地點、匹配分數篩選
 - 顯示履歷匹配原因
 - 提供手動觸發 match / notification 的按鈕
+- 上傳 PDF/TXT 履歷並解析成文字
+- 顯示最近 match run history
 
 注意：Telegram token 不應放在前端，前端只呼叫後端 API，由後端負責發送通知。
 
 後續可擴充：
 
 - 標記狀態：想投、已投、面試中、拒絕
-- 上傳履歷檔案，而不是只貼文字
-- 顯示歷史匹配紀錄
 - 加入 FastAPI auth，支援單使用者部署
 
 ## Phase 7 - Docker and Kubernetes

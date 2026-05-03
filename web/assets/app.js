@@ -11,7 +11,9 @@ const SAMPLE_RESUME = [
 function App() {
   const [jobs, setJobs] = useState([]);
   const [matches, setMatches] = useState([]);
+  const [matchRuns, setMatchRuns] = useState([]);
   const [resumeText, setResumeText] = useState(SAMPLE_RESUME);
+  const [resumeFileName, setResumeFileName] = useState("");
   const [minScore, setMinScore] = useState(70);
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
@@ -21,11 +23,13 @@ function App() {
   const [telegramLimit, setTelegramLimit] = useState(5);
   const [loading, setLoading] = useState(false);
   const [crawling, setCrawling] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     loadJobs();
     loadCrawlers();
+    loadMatchRuns();
   }, []);
 
   const filteredMatches = useMemo(() => {
@@ -65,6 +69,37 @@ function App() {
     const sources = data.sources || ["sample"];
     setCrawlerSources(sources);
     setCrawlerSource((current) => (sources.includes(current) ? current : sources[0] || "sample"));
+  }
+
+  async function loadMatchRuns() {
+    const response = await fetch("/api/match-runs");
+    const data = await response.json();
+    setMatchRuns(data);
+  }
+
+  async function uploadResume(file) {
+    if (!file) return;
+    setUploadingResume(true);
+    setMessage("");
+    try {
+      const body = await file.arrayBuffer();
+      const response = await fetch(`/api/resume/parse?filename=${encodeURIComponent(file.name)}`, {
+        method: "POST",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Resume parse failed");
+      }
+      setResumeText(data.text);
+      setResumeFileName(data.filename);
+      setMessage(`Loaded ${data.char_count} character(s) from ${data.filename}.`);
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setUploadingResume(false);
+    }
   }
 
   async function runCrawl() {
@@ -109,6 +144,7 @@ function App() {
       }
       setMatches(data.matches);
       setSelectedJob(data.matches[0] || null);
+      await loadMatchRuns();
       const suffix =
         data.notified_count === null || data.notified_count === undefined
           ? ""
@@ -131,6 +167,9 @@ function App() {
       e(ControlPanel, {
         resumeText,
         setResumeText,
+        resumeFileName,
+        uploadResume,
+        uploadingResume,
         minScore,
         setMinScore,
         query,
@@ -160,7 +199,12 @@ function App() {
             selectedJob,
             setSelectedJob,
           }),
-          e(JobDetail, { job: selectedJob })
+          e(
+            "div",
+            { className: "side-stack" },
+            e(JobDetail, { job: selectedJob }),
+            e(MatchRuns, { runs: matchRuns })
+          )
         )
       )
     )
@@ -217,6 +261,18 @@ function ControlPanel(props) {
         },
         props.crawling ? "Crawling..." : "Run crawl"
       )
+    ),
+    e(
+      "label",
+      { className: "upload-box" },
+      e("span", null, props.uploadingResume ? "Parsing resume..." : "Upload resume"),
+      e("small", null, props.resumeFileName || "PDF or TXT"),
+      e("input", {
+        type: "file",
+        accept: ".pdf,.txt",
+        onChange: (event) => props.uploadResume(event.target.files[0]),
+        disabled: props.uploadingResume,
+      })
     ),
     e("label", { className: "field-label", htmlFor: "resume" }, "Resume text"),
     e("textarea", {
@@ -356,6 +412,41 @@ function JobDetail({ job }) {
       ? e("a", { className: "job-link", href: job.url, target: "_blank", rel: "noreferrer" }, "Open job")
       : null
   );
+}
+
+function MatchRuns({ runs }) {
+  return e(
+    "section",
+    { className: "history-panel" },
+    e("h3", null, "Recent runs"),
+    runs.length
+      ? e(
+          "div",
+          { className: "history-list" },
+          runs.map((run) =>
+            e(
+              "div",
+              { className: "history-row", key: run.id },
+              e(
+                "div",
+                null,
+                e("strong", null, `${run.qualified_matches}/${run.total_matches} qualified`),
+                e("small", null, formatDate(run.created_at))
+              ),
+              e("span", null, `min ${run.min_score.toFixed(1)}`)
+            )
+          )
+        )
+      : e("p", { className: "summary" }, "No match runs recorded yet.")
+  );
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  const normalized = value.includes("T") ? value : value.replace(" ", "T");
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
 }
 
 function SkillGroup({ title, skills, tone }) {

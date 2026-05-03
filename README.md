@@ -38,7 +38,7 @@ Then visit:
 http://127.0.0.1:8000
 ```
 
-The dashboard lets you paste resume text, run matching against imported jobs, filter by score/skill/company, inspect matched and missing skills, and optionally send a Telegram digest.
+The dashboard lets you upload or paste resume text, run matching against imported jobs, filter by score/skill/company, inspect matched and missing skills, review recent match runs, and optionally send a Telegram digest.
 
 It also includes crawler actions that import normalized jobs through the same pipeline:
 

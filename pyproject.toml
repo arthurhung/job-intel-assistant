@@ -5,6 +5,7 @@ description = "A small job intelligence assistant for importing, matching, and r
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
+    "pypdf>=5.0.0",
     "uvicorn[standard]>=0.30.0",
 ]
 
