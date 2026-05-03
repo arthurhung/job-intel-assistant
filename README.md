@@ -18,6 +18,7 @@ The current version is a CLI MVP. It focuses on the core data flow before adding
 
 ```powershell
 python -m pip install -e .
+python -m job_intel crawl --source taiwan
 python -m job_intel crawl --source remoteok
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
@@ -75,6 +76,7 @@ It also includes crawler actions that import normalized jobs through the same pi
 - `remoteok`: remote jobs from the public Remote OK API
 - `himalayas`: remote jobs from the public Himalayas API
 - `arbeitnow`: remote and Europe-focused jobs from the public Arbeitnow API
+- `yourator` / `taiwan`: Taiwan startup and digital jobs from Yourator
 
 ## Telegram Notifications
 
