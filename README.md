@@ -119,7 +119,7 @@ python -m job_intel run-pipeline `
 
 See [docs/telegram.md](docs/telegram.md) for setup details.
 
-The app reads `.env` and `.env.local` automatically. Telegram commands can also reuse `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from `airflow/.env`. Existing environment variables take priority. Airflow reads `airflow/.env` through Docker Compose.
+The app reads `.env` and `.env.local` automatically. Existing environment variables take priority. Airflow reads `airflow/.env` through Docker Compose.
 
 Telegram notifications are deduplicated by `source + external_id + chat_id`, so the same job is not pushed again after a successful send.
 

@@ -28,7 +28,7 @@ TELEGRAM_BOT_TOKEN=your-bot-token
 TELEGRAM_CHAT_ID=your-chat-id
 ```
 
-The app reads `.env` and `.env.local` for local CLI/API runs. Telegram commands can also reuse `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from `airflow/.env`. Airflow reads `airflow/.env` through Docker Compose. Real environment variables still take priority over values in `.env`.
+The app reads `.env` and `.env.local` for local CLI/API runs. Airflow reads `airflow/.env` through Docker Compose. Real environment variables still take priority over values in `.env`.
 
 ```powershell
 python -m job_intel test-telegram
