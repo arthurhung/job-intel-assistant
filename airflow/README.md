@@ -32,6 +32,7 @@ python -m job_intel run-pipeline --resume C:\path\to\resume.pdf --notify-telegra
 | `JOB_INTEL_CRAWLER_SOURCE` | `all` | Crawler source |
 | `JOB_INTEL_DB_PATH` | `data/job_intel.sqlite3` | SQLite database path |
 | `JOB_INTEL_REPORT_PATH` | `reports/match_report.md` | Markdown report output path |
+| `JOB_INTEL_ALLOWED_LOCATIONS` | optional | Comma-separated location keywords, for example `taipei,台北,新北,taoyuan,桃園,remote` |
 | `JOB_INTEL_NOTIFY_TELEGRAM` | `false` | Send Telegram digest when `true`; keep `false` until bot credentials are configured |
 | `JOB_INTEL_TELEGRAM_MIN_SCORE` | `70` | Minimum score for notification |
 | `JOB_INTEL_TELEGRAM_LIMIT` | `5` | Maximum Telegram items |
@@ -82,6 +83,7 @@ To make it a real daily Telegram alert, set these values in `airflow/.env`:
 
 ```text
 JOB_INTEL_CRAWLER_SOURCE=all
+JOB_INTEL_ALLOWED_LOCATIONS=taipei,台北,臺北,new taipei,新北,taoyuan,桃園,remote
 JOB_INTEL_NOTIFY_TELEGRAM=true
 JOB_INTEL_TELEGRAM_MIN_SCORE=70
 JOB_INTEL_TELEGRAM_LIMIT=5

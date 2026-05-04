@@ -7,7 +7,7 @@ import {
   parseResume,
   runCrawler,
 } from "../api/client.js";
-import { DEFAULT_CRAWLER_SOURCE, DEFAULT_RESUME } from "../constants.js";
+import { DEFAULT_CRAWLER_SOURCE, DEFAULT_RESUME, LOCATION_OPTIONS } from "../constants.js";
 
 export function useDashboardData() {
   const [jobs, setJobs] = useState([]);
@@ -18,6 +18,7 @@ export function useDashboardData() {
   const [minScore, setMinScore] = useState(70);
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedLocations, setSelectedLocations] = useState(LOCATION_OPTIONS.map((option) => option.value));
   const [notifyTelegram, setNotifyTelegram] = useState(false);
   const [telegramLimit, setTelegramLimit] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -81,7 +82,7 @@ export function useDashboardData() {
   }
 
   async function crawlSelectedJobs() {
-    const data = await runCrawler(DEFAULT_CRAWLER_SOURCE);
+    const data = await runCrawler(DEFAULT_CRAWLER_SOURCE, expandedLocationKeywords);
     await loadJobs();
     return data;
   }
@@ -92,6 +93,7 @@ export function useDashboardData() {
       notify_telegram: notifyTelegram,
       telegram_min_score: Number(minScore),
       telegram_limit: Number(telegramLimit),
+      allowed_locations: expandedLocationKeywords,
     });
     setMatches(data.matches);
     setSelectedJob(data.matches[0] || null);
@@ -129,7 +131,7 @@ export function useDashboardData() {
           : ` Telegram sent ${matchResult.notified_count} item(s).`;
       const filtered =
         crawlResult.filtered_count > 0
-          ? ` Skipped ${crawlResult.filtered_count} non-Taiwan/non-remote job(s).`
+          ? ` Skipped ${crawlResult.filtered_count} job(s) outside your location scope.`
           : "";
       setMessage(
         `Imported ${crawlResult.imported_count} job(s) from all sources.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
@@ -141,6 +143,26 @@ export function useDashboardData() {
       setLoading(false);
     }
   }
+
+  function toggleLocation(value) {
+    setSelectedLocations((current) => {
+      if (current.includes(value)) {
+        return current.filter((item) => item !== value);
+      }
+      return [...current, value];
+    });
+  }
+
+  const expandedLocationKeywords = useMemo(
+    () =>
+      selectedLocations.flatMap((value) =>
+        value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      ),
+    [selectedLocations]
+  );
 
   return {
     jobs,
@@ -155,6 +177,9 @@ export function useDashboardData() {
     setQuery,
     selectedJob,
     setSelectedJob,
+    locationOptions: LOCATION_OPTIONS,
+    selectedLocations,
+    toggleLocation,
     notifyTelegram,
     setNotifyTelegram,
     telegramLimit,

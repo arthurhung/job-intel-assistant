@@ -9,7 +9,12 @@ from job_intel.core.skills import extract_skills
 from job_intel.db.models import JobRecord
 
 
-def match_jobs(conn: Session, resume_text: str) -> list[MatchResult]:
+def match_jobs(
+    conn: Session,
+    resume_text: str,
+    *,
+    allowed_location_keywords: tuple[str, ...] | None = None,
+) -> list[MatchResult]:
     resume_skills = set(extract_skills(resume_text))
     results: list[MatchResult] = []
 
@@ -21,6 +26,7 @@ def match_jobs(conn: Session, resume_text: str) -> list[MatchResult]:
             location=row.location,
             description=row.description,
             title=row.title,
+            allowed_location_keywords=allowed_location_keywords,
         ):
             continue
         job_skills = set(extract_skills(row.description + " " + row.title))

@@ -12,6 +12,9 @@ export function ControlPanel({
   setNotifyTelegram,
   telegramLimit,
   setTelegramLimit,
+  locationOptions,
+  selectedLocations,
+  toggleLocation,
   crawling,
   loading,
   runMatch,
@@ -24,6 +27,21 @@ export function ControlPanel({
       <div className="source-summary">
         <span>Crawler</span>
         <strong>All sources</strong>
+      </div>
+      <div className="location-picker">
+        <span className="field-label">Work locations</span>
+        <div className="location-options">
+          {locationOptions.map((option) => (
+            <label className="location-option" key={option.value}>
+              <input
+                type="checkbox"
+                checked={selectedLocations.includes(option.value)}
+                onChange={() => toggleLocation(option.value)}
+              />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
       </div>
       <label className="upload-box">
         <span>{uploadingResume ? "Parsing resume..." : "Upload resume to fill text"}</span>

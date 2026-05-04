@@ -40,7 +40,11 @@ def health() -> dict[str, str]:
 def list_jobs(
     min_posted_at: Annotated[str | None, Query(description="Optional lower bound for posted_at")] = None,
 ) -> list[dict]:
-    return list_jobs_service(settings.db_path, min_posted_at=min_posted_at)
+    return list_jobs_service(
+        settings.db_path,
+        min_posted_at=min_posted_at,
+        allowed_location_keywords=settings.allowed_location_keywords,
+    )
 
 
 @app.post("/api/resume/parse", response_model=ResumeParseResponse)
@@ -62,7 +66,11 @@ def list_crawlers() -> dict[str, list[str]]:
 @app.post("/api/crawl", response_model=CrawlResponse)
 def run_crawl(request: CrawlRequest) -> dict:
     try:
-        return run_crawler(settings.db_path, source=request.source)
+        return run_crawler(
+            settings.db_path,
+            source=request.source,
+            allowed_location_keywords=tuple(request.allowed_locations) or settings.allowed_location_keywords,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -76,6 +84,7 @@ def create_matches(request: MatchRequest) -> dict:
             notify_telegram=request.notify_telegram,
             telegram_min_score=request.telegram_min_score,
             telegram_limit=request.telegram_limit,
+            allowed_location_keywords=tuple(request.allowed_locations) or settings.allowed_location_keywords,
         )
     except TelegramConfigError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

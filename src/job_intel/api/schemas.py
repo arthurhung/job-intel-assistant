@@ -22,6 +22,7 @@ class MatchRequest(BaseModel):
     notify_telegram: bool = False
     telegram_min_score: float = 70.0
     telegram_limit: int = Field(default=5, ge=1, le=20)
+    allowed_locations: list[str] = Field(default_factory=list)
 
 
 class MatchResponse(BaseModel):
@@ -49,6 +50,7 @@ class MatchRunResponse(BaseModel):
 
 class CrawlRequest(BaseModel):
     source: str = "all"
+    allowed_locations: list[str] = Field(default_factory=list)
 
 
 class CrawlResponse(BaseModel):

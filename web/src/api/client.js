@@ -19,11 +19,11 @@ export function fetchMatchRuns() {
   return requestJson("/api/match-runs");
 }
 
-export function runCrawler(source = "all") {
+export function runCrawler(source = "all", allowedLocations = []) {
   return requestJson("/api/crawl", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ source }),
+    body: JSON.stringify({ source, allowed_locations: allowedLocations }),
   });
 }
 

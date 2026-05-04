@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from job_intel.config import get_settings
 from job_intel.crawlers import crawl_jobs
 from job_intel.db import session
 from job_intel.db.history import record_match_run
@@ -35,12 +36,20 @@ def run_pipeline(
     telegram_min_score: float = 70.0,
     telegram_limit: int = 5,
 ) -> PipelineResult:
-    jobs = filter_taiwan_or_remote_jobs(crawl_jobs(source))
+    settings = get_settings()
+    jobs = filter_taiwan_or_remote_jobs(
+        crawl_jobs(source),
+        allowed_location_keywords=settings.allowed_location_keywords or None,
+    )
     resume_text = load_resume_text(resume_path)
 
     with session(db_path) as conn:
         imported_count = upsert_jobs(conn, jobs)
-        results = match_jobs(conn, resume_text)
+        results = match_jobs(
+            conn,
+            resume_text,
+            allowed_location_keywords=settings.allowed_location_keywords or None,
+        )
 
     write_markdown_report(results, report_path)
 

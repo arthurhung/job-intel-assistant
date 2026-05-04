@@ -76,6 +76,11 @@ http://127.0.0.1:8000
 The dashboard lets you upload or paste resume text, crawl all configured sources, run matching against imported jobs, filter by score/skill/company/source, inspect matched and missing skills, review recent match runs, and optionally send a Telegram digest.
 
 Matching is intentionally scoped to Taiwan-based or open remote jobs. Country-restricted remote roles outside Taiwan are skipped before import and ignored during matching.
+Set `JOB_INTEL_ALLOWED_LOCATIONS` to narrow the work area. For example, this keeps Taipei, New Taipei, Taoyuan, and open remote roles:
+
+```text
+JOB_INTEL_ALLOWED_LOCATIONS=taipei,台北,臺北,new taipei,新北,taoyuan,桃園,remote
+```
 
 It also includes crawler actions that import normalized jobs through the same pipeline:
 

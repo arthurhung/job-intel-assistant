@@ -21,7 +21,12 @@ from job_intel.notifications.telegram import send_match_digest
 SUPPORTED_RESUME_SUFFIXES = {".pdf", ".txt"}
 
 
-def list_jobs(db_path: Path, *, min_posted_at: str | None = None) -> list[dict]:
+def list_jobs(
+    db_path: Path,
+    *,
+    min_posted_at: str | None = None,
+    allowed_location_keywords: tuple[str, ...] = (),
+) -> list[dict]:
     with session(db_path) as conn:
         query = select(JobRecord)
         if min_posted_at:
@@ -35,6 +40,7 @@ def list_jobs(db_path: Path, *, min_posted_at: str | None = None) -> list[dict]:
                 location=row.location,
                 description=row.description,
                 title=row.title,
+                allowed_location_keywords=allowed_location_keywords or None,
             )
         ]
 
@@ -65,9 +71,12 @@ def parse_resume_bytes(*, filename: str, body: bytes) -> dict:
     return {"filename": filename, "text": text, "char_count": len(text)}
 
 
-def run_crawler(db_path: Path, *, source: str) -> dict:
+def run_crawler(db_path: Path, *, source: str, allowed_location_keywords: tuple[str, ...] = ()) -> dict:
     crawled_jobs = crawl_jobs(source)
-    jobs = filter_taiwan_or_remote_jobs(crawled_jobs)
+    jobs = filter_taiwan_or_remote_jobs(
+        crawled_jobs,
+        allowed_location_keywords=allowed_location_keywords or None,
+    )
     with session(db_path) as conn:
         imported_count = upsert_jobs(conn, jobs)
     return {
@@ -85,9 +94,14 @@ def create_match_run(
     notify_telegram: bool,
     telegram_min_score: float,
     telegram_limit: int,
+    allowed_location_keywords: tuple[str, ...] = (),
 ) -> dict:
     with session(db_path) as conn:
-        results = match_jobs(conn, resume_text)
+        results = match_jobs(
+            conn,
+            resume_text,
+            allowed_location_keywords=allowed_location_keywords or None,
+        )
 
     notified_count: int | None = None
     if notify_telegram:

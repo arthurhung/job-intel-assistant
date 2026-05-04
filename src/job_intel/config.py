@@ -19,6 +19,7 @@ class AppSettings:
     db_path: Path = ROOT_DIR / "data" / "job_intel.sqlite3"
     web_dir: Path = ROOT_DIR / "web" / "dist"
     default_report_path: Path = ROOT_DIR / "reports" / "match_report.md"
+    allowed_location_keywords: tuple[str, ...] = ()
 
 
 def load_env_files() -> None:
@@ -51,4 +52,10 @@ def get_settings() -> AppSettings:
         default_report_path=Path(
             os.getenv("JOB_INTEL_REPORT_PATH", ROOT_DIR / "reports" / "match_report.md")
         ),
+        allowed_location_keywords=parse_csv_env("JOB_INTEL_ALLOWED_LOCATIONS"),
     )
+
+
+def parse_csv_env(name: str) -> tuple[str, ...]:
+    value = os.getenv(name, "")
+    return tuple(item.strip() for item in value.split(",") if item.strip())

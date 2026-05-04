@@ -12,6 +12,9 @@ OPEN_REMOTE_LOCATIONS = (
     "distributed",
 )
 
+REMOTE_LOCATION_KEYS = ("remote", "open remote", "worldwide", "anywhere", "global", "wfh")
+DEFAULT_ALLOWED_LOCATION_KEYWORDS = ("taipei", "\u53f0\u5317", "\u81fa\u5317", "new taipei", "\u65b0\u5317", "taoyuan", "\u6843\u5712", "remote")
+
 TAIWAN_KEYWORDS = (
     "taiwan",
     "\u53f0\u7063",
@@ -63,7 +66,16 @@ def is_taiwan_or_remote_job(
     location: str,
     description: str = "",
     title: str = "",
+    allowed_location_keywords: tuple[str, ...] | None = None,
 ) -> bool:
+    if allowed_location_keywords:
+        return _matches_location_scope(
+            location=location,
+            description=description,
+            title=title,
+            allowed_location_keywords=allowed_location_keywords,
+        )
+
     if _has_taiwan_signal(location=location, description=description, title=title):
         return True
     return _is_open_remote_location(location)
@@ -72,6 +84,22 @@ def is_taiwan_or_remote_job(
 def _has_taiwan_signal(*, location: str, description: str, title: str) -> bool:
     full_text = " ".join([location, title, description]).lower()
     return any(keyword in full_text for keyword in TAIWAN_KEYWORDS)
+
+
+def _matches_location_scope(
+    *,
+    location: str,
+    description: str,
+    title: str,
+    allowed_location_keywords: tuple[str, ...],
+) -> bool:
+    full_text = " ".join([location, title, description]).lower()
+    normalized_keywords = tuple(keyword.strip().lower() for keyword in allowed_location_keywords if keyword.strip())
+    if any(keyword in full_text for keyword in normalized_keywords if keyword not in REMOTE_LOCATION_KEYS):
+        return True
+    if any(keyword in REMOTE_LOCATION_KEYS for keyword in normalized_keywords):
+        return _is_open_remote_location(location)
+    return False
 
 
 def _is_open_remote_location(location: str) -> bool:
@@ -83,7 +111,11 @@ def _is_open_remote_location(location: str) -> bool:
     return any(keyword in normalized for keyword in OPEN_REMOTE_LOCATIONS)
 
 
-def filter_taiwan_or_remote_jobs(jobs: list[JobPosting]) -> list[JobPosting]:
+def filter_taiwan_or_remote_jobs(
+    jobs: list[JobPosting],
+    *,
+    allowed_location_keywords: tuple[str, ...] | None = None,
+) -> list[JobPosting]:
     return [
         job
         for job in jobs
@@ -92,5 +124,6 @@ def filter_taiwan_or_remote_jobs(jobs: list[JobPosting]) -> list[JobPosting]:
             location=job.location,
             description=job.description,
             title=job.title,
+            allowed_location_keywords=allowed_location_keywords,
         )
     ]

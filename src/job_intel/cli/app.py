@@ -14,7 +14,8 @@ from job_intel.core.resume import load_resume_text
 from job_intel.notifications.telegram import TelegramConfigError, send_match_digest, send_test_message
 
 
-DEFAULT_DB = get_settings().db_path
+DEFAULT_SETTINGS = get_settings()
+DEFAULT_DB = DEFAULT_SETTINGS.db_path
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -88,9 +89,13 @@ def handle_crawl(args: argparse.Namespace) -> int:
     from job_intel.application.services import run_crawler
 
     db_path = Path(args.db)
-    result = run_crawler(db_path, source=args.source)
+    result = run_crawler(
+        db_path,
+        source=args.source,
+        allowed_location_keywords=DEFAULT_SETTINGS.allowed_location_keywords,
+    )
     filtered = result.get("filtered_count", 0)
-    suffix = f" ({filtered} non-Taiwan/non-remote skipped)" if filtered else ""
+    suffix = f" ({filtered} outside location scope skipped)" if filtered else ""
     print(f"Crawled and imported {result['imported_count']} jobs from {args.source} into {db_path}{suffix}")
     return 0
 
@@ -98,7 +103,11 @@ def handle_crawl(args: argparse.Namespace) -> int:
 def handle_match(args: argparse.Namespace) -> int:
     resume_text = load_resume_text(Path(args.resume))
     with session(Path(args.db)) as conn:
-        results = match_jobs(conn, resume_text)
+        results = match_jobs(
+            conn,
+            resume_text,
+            allowed_location_keywords=DEFAULT_SETTINGS.allowed_location_keywords or None,
+        )
 
     write_markdown_report(results, Path(args.out))
     print(f"Wrote {len(results)} matches to {args.out}")
