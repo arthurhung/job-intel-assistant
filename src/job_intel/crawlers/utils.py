@@ -12,8 +12,11 @@ from typing import Any
 DEFAULT_USER_AGENT = "job-intel-assistant/0.1"
 
 
-def fetch_json(url: str, *, timeout: int = 20) -> Any:
-    request = urllib.request.Request(url, headers={"User-Agent": DEFAULT_USER_AGENT})
+def fetch_json(url: str, *, timeout: int = 20, headers: dict[str, str] | None = None) -> Any:
+    request_headers = {"User-Agent": DEFAULT_USER_AGENT}
+    if headers:
+        request_headers.update(headers)
+    request = urllib.request.Request(url, headers=request_headers)
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8", errors="replace"))
 

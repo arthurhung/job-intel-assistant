@@ -5,6 +5,7 @@ from job_intel.crawlers.arbeitnow import ArbeitnowCrawler
 from job_intel.crawlers.cake import CakeCrawler
 from job_intel.crawlers.contact_taiwan import ContactTaiwanCrawler
 from job_intel.crawlers.himalayas import HimalayasCrawler
+from job_intel.crawlers.job104 import Job104Crawler
 from job_intel.crawlers.remotive import RemotiveCrawler
 from job_intel.crawlers.remoteok import RemoteOkCrawler
 from job_intel.crawlers.taiwan import TaiwanCrawler
@@ -18,6 +19,7 @@ CRAWLERS: dict[str, type[JobCrawler]] = {
     CakeCrawler.source: CakeCrawler,
     ContactTaiwanCrawler.source: ContactTaiwanCrawler,
     HimalayasCrawler.source: HimalayasCrawler,
+    Job104Crawler.source: Job104Crawler,
     RemotiveCrawler.source: RemotiveCrawler,
     RemoteOkCrawler.source: RemoteOkCrawler,
     TaiwanCrawler.source: TaiwanCrawler,
