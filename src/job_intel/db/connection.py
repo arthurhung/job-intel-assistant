@@ -1,65 +1,38 @@
 from __future__ import annotations
 
-import sqlite3
-from contextlib import contextmanager
 from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS jobs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source TEXT NOT NULL,
-    external_id TEXT NOT NULL,
-    title TEXT NOT NULL,
-    company TEXT NOT NULL,
-    location TEXT DEFAULT '',
-    url TEXT DEFAULT '',
-    description TEXT NOT NULL,
-    salary TEXT DEFAULT '',
-    posted_at TEXT DEFAULT '',
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(source, external_id)
-);
-
-CREATE TABLE IF NOT EXISTS match_runs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    resume_preview TEXT NOT NULL,
-    resume_chars INTEGER NOT NULL,
-    min_score REAL NOT NULL,
-    total_matches INTEGER NOT NULL,
-    qualified_matches INTEGER NOT NULL,
-    notified_count INTEGER,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS telegram_sent_jobs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    source TEXT NOT NULL,
-    external_id TEXT NOT NULL,
-    chat_id TEXT NOT NULL,
-    first_sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    last_sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    send_count INTEGER NOT NULL DEFAULT 1,
-    UNIQUE(source, external_id, chat_id)
-);
-"""
+from job_intel.db.models import Base
 
 
-def connect(db_path: Path) -> sqlite3.Connection:
+def create_db_engine(db_path: Path) -> Engine:
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.executescript(SCHEMA)
-    return conn
+    engine = create_engine(f"sqlite:///{db_path}", future=True)
+    Base.metadata.create_all(engine)
+    return engine
+
+
+def create_session_factory(db_path: Path) -> sessionmaker[Session]:
+    engine = create_db_engine(db_path)
+    return sessionmaker(bind=engine, autoflush=False, expire_on_commit=False, future=True)
+
+
+def connect(db_path: Path) -> Session:
+    return create_session_factory(db_path)()
 
 
 @contextmanager
-def session(db_path: Path) -> Iterator[sqlite3.Connection]:
-    conn = connect(db_path)
+def session(db_path: Path) -> Iterator[Session]:
+    engine = create_db_engine(db_path)
+    factory = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False, future=True)
+    db_session = factory()
     try:
-        yield conn
+        yield db_session
     finally:
-        conn.close()
+        db_session.close()
+        engine.dispose()

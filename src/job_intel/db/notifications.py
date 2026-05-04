@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import sqlite3
+from sqlalchemy import select, text
+from sqlalchemy.dialects.sqlite import insert
+from sqlalchemy.orm import Session
 
 from job_intel.core.models import MatchResult
+from job_intel.db.models import TelegramSentJobRecord
 
 
 def filter_unsent_telegram_matches(
-    conn: sqlite3.Connection,
+    conn: Session,
     results: list[MatchResult],
     *,
     chat_id: str,
@@ -18,15 +21,15 @@ def filter_unsent_telegram_matches(
     for item in selected:
         if not item.source or not item.external_id:
             continue
-        exists = conn.execute(
-            """
-            SELECT 1
-            FROM telegram_sent_jobs
-            WHERE source = ? AND external_id = ? AND chat_id = ?
-            LIMIT 1
-            """,
-            (item.source, item.external_id, chat_id),
-        ).fetchone()
+        exists = conn.scalar(
+            select(TelegramSentJobRecord.id)
+            .where(
+                TelegramSentJobRecord.source == item.source,
+                TelegramSentJobRecord.external_id == item.external_id,
+                TelegramSentJobRecord.chat_id == chat_id,
+            )
+            .limit(1)
+        )
         if exists is None:
             unsent.append(item)
         if len(unsent) >= limit:
@@ -35,23 +38,26 @@ def filter_unsent_telegram_matches(
 
 
 def record_telegram_sent_jobs(
-    conn: sqlite3.Connection,
+    conn: Session,
     results: list[MatchResult],
     *,
     chat_id: str,
 ) -> None:
-    conn.executemany(
-        """
-        INSERT INTO telegram_sent_jobs (source, external_id, chat_id)
-        VALUES (?, ?, ?)
-        ON CONFLICT(source, external_id, chat_id) DO UPDATE SET
-            last_sent_at = CURRENT_TIMESTAMP,
-            send_count = send_count + 1
-        """,
-        [
-            (item.source, item.external_id, chat_id)
-            for item in results
-            if item.source and item.external_id
-        ],
-    )
+    for item in results:
+        if not item.source or not item.external_id:
+            continue
+        statement = insert(TelegramSentJobRecord).values(
+            source=item.source,
+            external_id=item.external_id,
+            chat_id=chat_id,
+        )
+        conn.execute(
+            statement.on_conflict_do_update(
+                index_elements=["source", "external_id", "chat_id"],
+                set_={
+                    "last_sent_at": text("CURRENT_TIMESTAMP"),
+                    "send_count": TelegramSentJobRecord.send_count + 1,
+                },
+            )
+        )
     conn.commit()

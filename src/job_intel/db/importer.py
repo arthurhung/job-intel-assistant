@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import csv
-import sqlite3
 from pathlib import Path
 
+from sqlalchemy import text
+from sqlalchemy.dialects.sqlite import insert
+from sqlalchemy.orm import Session
+
 from job_intel.core.models import JobPosting
+from job_intel.db.models import JobRecord
 
 
 REQUIRED_COLUMNS = {
@@ -42,36 +46,28 @@ def read_jobs_csv(path: Path) -> list[JobPosting]:
         ]
 
 
-def upsert_jobs(conn: sqlite3.Connection, jobs: list[JobPosting]) -> int:
+def upsert_jobs(conn: Session, jobs: list[JobPosting]) -> int:
     for job in jobs:
+        values = {
+            "source": job.source,
+            "external_id": job.external_id,
+            "title": job.title,
+            "company": job.company,
+            "location": job.location,
+            "url": job.url,
+            "description": job.description,
+            "salary": job.salary,
+            "posted_at": job.posted_at,
+        }
+        statement = insert(JobRecord).values(**values)
         conn.execute(
-            """
-            INSERT INTO jobs (
-                source, external_id, title, company, location, url,
-                description, salary, posted_at
+            statement.on_conflict_do_update(
+                index_elements=["source", "external_id"],
+                set_={
+                    **values,
+                    "updated_at": text("CURRENT_TIMESTAMP"),
+                },
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(source, external_id) DO UPDATE SET
-                title = excluded.title,
-                company = excluded.company,
-                location = excluded.location,
-                url = excluded.url,
-                description = excluded.description,
-                salary = excluded.salary,
-                posted_at = excluded.posted_at,
-                updated_at = CURRENT_TIMESTAMP
-            """,
-            (
-                job.source,
-                job.external_id,
-                job.title,
-                job.company,
-                job.location,
-                job.url,
-                job.description,
-                job.salary,
-                job.posted_at,
-            ),
         )
     conn.commit()
     return len(jobs)
