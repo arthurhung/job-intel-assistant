@@ -4,7 +4,7 @@ import csv
 import sqlite3
 from pathlib import Path
 
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 REQUIRED_COLUMNS = {

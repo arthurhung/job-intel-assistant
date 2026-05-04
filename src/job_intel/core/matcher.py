@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import sqlite3
 
-from job_intel.job_filters import is_taiwan_or_remote_job
-from job_intel.models import MatchResult
-from job_intel.skills import extract_skills
+from job_intel.core.job_filters import is_taiwan_or_remote_job
+from job_intel.core.models import MatchResult
+from job_intel.core.skills import extract_skills
 
 
 def match_jobs(conn: sqlite3.Connection, resume_text: str) -> list[MatchResult]:

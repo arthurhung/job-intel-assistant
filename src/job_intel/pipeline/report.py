@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from job_intel.models import MatchResult
+from job_intel.core.models import MatchResult
 
 
 def write_markdown_report(results: list[MatchResult], out_path: Path) -> None:

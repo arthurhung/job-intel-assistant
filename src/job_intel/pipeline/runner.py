@@ -5,13 +5,13 @@ from pathlib import Path
 
 from job_intel.crawlers import crawl_jobs
 from job_intel.db import session
-from job_intel.history import record_match_run
-from job_intel.importer import upsert_jobs
-from job_intel.job_filters import filter_taiwan_or_remote_jobs
-from job_intel.matcher import match_jobs
-from job_intel.report import write_markdown_report
-from job_intel.resume import load_resume_text
-from job_intel.telegram import send_match_digest
+from job_intel.db.history import record_match_run
+from job_intel.db.importer import upsert_jobs
+from job_intel.core.job_filters import filter_taiwan_or_remote_jobs
+from job_intel.core.matcher import match_jobs
+from job_intel.pipeline.report import write_markdown_report
+from job_intel.core.resume import load_resume_text
+from job_intel.notifications.telegram import send_match_digest
 
 
 @dataclass(frozen=True)

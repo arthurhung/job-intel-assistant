@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.utils import clean_html, fetch_json, first_date
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 REMOTEOK_API_URL = "https://remoteok.com/api"

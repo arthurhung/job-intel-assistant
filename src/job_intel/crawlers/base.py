@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 class JobCrawler(ABC):

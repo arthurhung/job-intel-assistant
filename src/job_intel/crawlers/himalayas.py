@@ -4,7 +4,7 @@ import urllib.parse
 
 from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.utils import clean_html, fetch_json, first_date
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 HIMALAYAS_SEARCH_URL = "https://himalayas.app/jobs/api/search"

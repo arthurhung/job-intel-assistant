@@ -1,6 +1,6 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 OPEN_REMOTE_LOCATIONS = (
@@ -14,46 +14,46 @@ OPEN_REMOTE_LOCATIONS = (
 
 TAIWAN_KEYWORDS = (
     "taiwan",
-    "台灣",
-    "臺灣",
+    "\u53f0\u7063",
+    "\u81fa\u7063",
     "taipei",
-    "台北",
-    "臺北",
+    "\u53f0\u5317",
+    "\u81fa\u5317",
     "new taipei",
-    "新北",
+    "\u65b0\u5317",
     "taoyuan",
-    "桃園",
+    "\u6843\u5712",
     "hsinchu",
-    "新竹",
+    "\u65b0\u7af9",
     "miaoli",
-    "苗栗",
+    "\u82d7\u6817",
     "taichung",
-    "台中",
-    "臺中",
+    "\u53f0\u4e2d",
+    "\u81fa\u4e2d",
     "changhua",
-    "彰化",
+    "\u5f70\u5316",
     "nantou",
-    "南投",
+    "\u5357\u6295",
     "yunlin",
-    "雲林",
+    "\u96f2\u6797",
     "chiayi",
-    "嘉義",
+    "\u5609\u7fa9",
     "tainan",
-    "台南",
-    "臺南",
+    "\u53f0\u5357",
+    "\u81fa\u5357",
     "kaohsiung",
-    "高雄",
+    "\u9ad8\u96c4",
     "pingtung",
-    "屏東",
+    "\u5c4f\u6771",
     "yilan",
-    "宜蘭",
+    "\u5b9c\u862d",
     "hualien",
-    "花蓮",
+    "\u82b1\u84ee",
     "taitung",
-    "台東",
-    "臺東",
+    "\u53f0\u6771",
+    "\u81fa\u6771",
     "keelung",
-    "基隆",
+    "\u57fa\u9686",
 )
 
 

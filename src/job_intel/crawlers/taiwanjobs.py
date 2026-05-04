@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.utils import fetch_text
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 TAIWANJOBS_API_URL = "https://free.taiwanjobs.gov.tw/webservice_taipei/Webservice.ashx?count1000"

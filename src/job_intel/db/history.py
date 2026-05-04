@@ -4,7 +4,7 @@ import sqlite3
 import re
 from datetime import UTC, datetime
 
-from job_intel.models import MatchResult
+from job_intel.core.models import MatchResult
 
 
 EMAIL_PATTERN = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")

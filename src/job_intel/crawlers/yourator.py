@@ -4,7 +4,7 @@ import urllib.parse
 
 from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.utils import fetch_json
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 YOURATOR_API_URL = "https://www.yourator.co/api/v4/jobs"

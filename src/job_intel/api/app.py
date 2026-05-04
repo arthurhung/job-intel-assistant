@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from job_intel.config import get_settings
 from job_intel.crawlers import available_crawlers
-from job_intel.schemas import (
+from job_intel.api.schemas import (
     CrawlRequest,
     CrawlResponse,
     JobResponse,
@@ -17,14 +17,14 @@ from job_intel.schemas import (
     MatchRunResponse,
     ResumeParseResponse,
 )
-from job_intel.services import (
+from job_intel.application.services import (
     create_match_run,
     list_jobs as list_jobs_service,
     list_match_runs as list_match_runs_service,
     parse_resume_bytes,
     run_crawler,
 )
-from job_intel.telegram import TelegramConfigError
+from job_intel.notifications.telegram import TelegramConfigError
 
 
 settings = get_settings()

@@ -9,7 +9,7 @@ from job_intel.crawlers.remoteok import RemoteOkCrawler
 from job_intel.crawlers.taiwan import TaiwanCrawler
 from job_intel.crawlers.taiwanjobs import TaiwanJobsCrawler
 from job_intel.crawlers.yourator import YouratorCrawler
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 CRAWLERS: dict[str, type[JobCrawler]] = {

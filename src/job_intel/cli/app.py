@@ -6,12 +6,12 @@ from pathlib import Path
 from job_intel.config import get_settings
 from job_intel.crawlers import available_crawlers
 from job_intel.db import session
-from job_intel.importer import read_jobs_csv, upsert_jobs
-from job_intel.matcher import match_jobs
+from job_intel.db.importer import read_jobs_csv, upsert_jobs
+from job_intel.core.matcher import match_jobs
 from job_intel.pipeline import run_pipeline
-from job_intel.report import write_markdown_report
-from job_intel.resume import load_resume_text
-from job_intel.telegram import TelegramConfigError, send_match_digest, send_test_message
+from job_intel.pipeline.report import write_markdown_report
+from job_intel.core.resume import load_resume_text
+from job_intel.notifications.telegram import TelegramConfigError, send_match_digest, send_test_message
 
 
 DEFAULT_DB = get_settings().db_path
@@ -85,7 +85,7 @@ def handle_import_jobs(args: argparse.Namespace) -> int:
 
 
 def handle_crawl(args: argparse.Namespace) -> int:
-    from job_intel.services import run_crawler
+    from job_intel.application.services import run_crawler
 
     db_path = Path(args.db)
     result = run_crawler(db_path, source=args.source)

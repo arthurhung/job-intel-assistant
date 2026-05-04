@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.utils import clean_html, date_from_epoch, fetch_json
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 ARBEITNOW_API_URL = "https://www.arbeitnow.com/api/job-board-api"

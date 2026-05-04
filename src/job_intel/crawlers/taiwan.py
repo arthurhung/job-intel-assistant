@@ -4,7 +4,7 @@ from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.cake import CakeCrawler
 from job_intel.crawlers.taiwanjobs import TaiwanJobsCrawler
 from job_intel.crawlers.yourator import YouratorCrawler
-from job_intel.models import JobPosting
+from job_intel.core.models import JobPosting
 
 
 class TaiwanCrawler(JobCrawler):

@@ -5,7 +5,7 @@ import os
 import urllib.parse
 import urllib.request
 
-from job_intel.models import MatchResult
+from job_intel.core.models import MatchResult
 
 
 TELEGRAM_API_BASE = "https://api.telegram.org"
