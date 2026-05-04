@@ -1,140 +1,136 @@
 # Job Intel Assistant Roadmap
 
-這個 side project 的定位是：自動蒐集職缺、清洗資料、分析技能需求，並根據履歷匹配度提醒值得投遞的工作。
+This project is a portfolio-ready job intelligence assistant. The goal is to crawl Taiwan and open-remote job sources, rank jobs against a resume, and push only useful opportunities to Telegram on a schedule.
+
+## Current Focus
+
+- Keep the daily workflow hands-off.
+- Prioritize Taiwan-based and open-remote jobs.
+- Avoid duplicate Telegram notifications.
+- Keep the project structure clear enough to discuss in interviews.
 
 ## Phase 1 - CLI MVP
 
-目標：先做出一條能跑通的本地資料流程，證明核心概念。
+Status: done.
 
-狀態：已完成基礎版。
+- Import normalized jobs into SQLite.
+- Load resume text from PDF or TXT.
+- Extract known skills from resumes and job descriptions.
+- Score resume-to-job matches.
+- Generate a Markdown match report.
+- Run the workflow from `python -m job_intel`.
 
-- 從 CSV 匯入職缺資料
-- 使用 SQLite 儲存職缺
-- 從 PDF/TXT 讀取履歷文字
-- 用技能關鍵字計算履歷與職缺匹配分數
-- 產生 Markdown match report
-- 依分數排序職缺
+## Phase 2 - Crawlers
 
-## Phase 2 - Telegram Notification
+Status: in progress.
 
-目標：在產生匹配結果後，把高分職缺主動推送給使用者。
+- Add crawler adapters behind a shared interface.
+- Normalize jobs into `source`, `external_id`, `title`, `company`, `location`, `url`, `description`, `salary`, and `posted_at`.
+- Deduplicate jobs with `source + external_id`.
+- Support Taiwan-focused sources through the `taiwan` aggregate crawler.
+- Keep non-Taiwan, country-restricted remote roles out of the matching flow.
 
-狀態：已完成 CLI 整合。
+Next improvements:
 
-- 使用 Telegram Bot API 發送通知
-- 支援 `TELEGRAM_BOT_TOKEN` 與 `TELEGRAM_CHAT_ID` 環境變數
-- 支援最低通知分數門檻
-- 支援限制推送職缺數量
-- 保留 Markdown report 作為完整結果
+- Add source health tracking.
+- Record crawl run history.
+- Improve crawler error handling and rate-limit behavior.
+- Add more Taiwan job sources if they provide stable public data or acceptable HTML access.
 
-後續可擴充：
+## Phase 3 - Telegram Notifications
 
-- 加入「沒有高分職缺就不通知」模式
-- 加入 daily digest 格式
-- 支援多個通知 channel，例如 Email、Line、Discord
+Status: in progress.
 
-## Phase 3 - Crawler Adapters
+- Send top matches through Telegram Bot API.
+- Read `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from `.env` or the environment.
+- Support `python -m job_intel test-telegram`.
+- Send only jobs above the configured score threshold.
+- Skip jobs that were already sent to the same Telegram chat.
 
-目標：從手動 CSV 匯入，升級成自動蒐集職缺。
+Next improvements:
 
-狀態：已完成 adapter 架構、sample crawler 與 Remotive public API crawler。
+- Show why a job was notified.
+- Add notification history to the dashboard.
+- Support a daily digest summary when there are no new jobs, if desired.
 
-- 建立 `crawler` interface
-- 支援 CLI：`python -m job_intel crawl --source sample`
-- 支援 CLI：`python -m job_intel crawl --source remotive`
-- 支援 API：`POST /api/crawl`
-- Dashboard 可手動觸發 crawler
-- 正規化欄位：source、external_id、title、company、location、url、description、salary、posted_at
-- 用 `source + external_id` 做去重
-- 保留 raw description，方便之後做 LLM enrichment
+## Phase 4 - Airflow Pipeline
 
-後續可擴充：
+Status: in progress.
 
-- 再支援 1 個台灣或公司 career page 來源，例如 Cake、Yourator，或特定公司 career page
-- 加入 crawler error handling 與 rate limit
-- 儲存 crawl run history，記錄每次匯入數量與錯誤
-
-## Phase 4 - LLM Job Analysis
-
-目標：讓工具不只做關鍵字比對，而是能產生更像求職助理的分析。
-
-- 擷取職缺技能要求
-- 判斷職缺等級：junior / mid / senior
-- 摘要工作內容與加分條件
-- 產生履歷修改建議
-- 產生可能面試重點
-- 將 LLM 輸出存成結構化 JSON
-
-## Phase 5 - Airflow Pipeline
-
-目標：把職缺蒐集、清洗、分析、通知變成可觀測、可重跑的資料管線。
-
-狀態：已完成 Airflow-ready DAG 與共用 pipeline function。
-
-建議 DAG：
+Target DAG:
 
 ```text
 crawl_jobs
 -> normalize_jobs
 -> deduplicate_jobs
--> analyze_with_llm
 -> match_resume
 -> send_telegram_notification
+-> record_run_history
 ```
 
-展示重點：
+Current goals:
 
-- 排程資料管線
-- task retry 與失敗觀測
-- backfill 歷史職缺資料
-- 將 Telegram 通知作為 pipeline 最後一段
-- CLI 可直接執行完整 pipeline：`python -m job_intel run-pipeline`
+- Run the real pipeline inside Docker Compose.
+- Load Airflow settings from `airflow/.env`.
+- Use retries for crawler and notification tasks.
+- Keep reports and SQLite data mounted outside the container.
 
-## Phase 6 - Web Dashboard
+Next improvements:
 
-目標：提供一個可以展示作品集的操作介面。
+- Add clearer task boundaries in the DAG.
+- Add source health and notification history tasks.
+- Prepare the flow for PostgreSQL later.
 
-狀態：已完成基礎版。
+## Phase 5 - Web Dashboard
 
-- 查看職缺列表
-- 依技能、公司、地點、匹配分數篩選
-- 顯示履歷匹配原因
-- 提供手動觸發 match / notification 的按鈕
-- 上傳 PDF/TXT 履歷並解析成文字
-- 顯示最近 match run history
+Status: in progress.
 
-注意：Telegram token 不應放在前端，前端只呼叫後端 API，由後端負責發送通知。
+- FastAPI backend.
+- React dashboard.
+- Resume upload or pasted resume text.
+- Crawler controls.
+- Match run history.
+- Taiwan/open-remote filtering.
+- Optional Telegram digest from the dashboard.
 
-後續可擴充：
+Next improvements:
 
-- 標記狀態：想投、已投、面試中、拒絕
-- 加入 FastAPI auth，支援單使用者部署
+- Show sent/not-sent notification status.
+- Add crawler run history.
+- Improve filters for source, location, score, and skills.
+- Add simple auth before exposing the dashboard outside local development.
 
-## Phase 7 - Docker and Kubernetes
+## Phase 6 - Matching Quality
 
-目標：展示 production-minded deployment 能力。
+Status: planned.
 
-Docker Compose：
+- Detect seniority and role type.
+- Separate must-have skills from nice-to-have skills.
+- Explain matched and missing skills more clearly.
+- Add LLM-based job analysis with structured JSON output.
+- Keep deterministic keyword scoring as the fallback path.
 
-- FastAPI backend
-- PostgreSQL
-- Airflow
-- Redis 或 Airflow executor 需要的 queue
+## Phase 7 - Production-Minded Deployment
 
-Kubernetes：
+Status: planned.
 
-- Backend Deployment / Service
-- Airflow scheduler / webserver / worker
-- PostgreSQL 可先用外部服務或 dev-only manifest
-- Secret 管理 Telegram token、LLM API key、DB password
-- ConfigMap 管理排程與 app 設定
-- Ingress 對外暴露 dashboard
-- CronJob 可作為簡化版排程替代方案
+Docker:
+
+- FastAPI backend.
+- Airflow scheduler and webserver.
+- SQLite for local development, PostgreSQL later.
+- Mounted data and reports directories.
+
+Kubernetes:
+
+- Backend Deployment and Service.
+- Airflow scheduler, webserver, and worker.
+- Secret management for Telegram and LLM credentials.
+- ConfigMap for non-secret settings.
+- CronJob or Airflow-based scheduled execution.
 
 ## Portfolio Narrative
 
-這個專案可以包裝成：
+> Built a data-driven job intelligence assistant with scheduled ETL pipelines, Taiwan/open-remote job crawling, resume-job matching, Telegram notifications, Dockerized Airflow orchestration, and production-minded deployment planning.
 
-> Built a data-driven job intelligence assistant with scheduled ETL pipelines, resume-job matching, Telegram notifications, LLM-based job analysis, and containerized deployment.
-
-第一版重點是跑通核心流程；第二階段開始加入自動化、LLM、Airflow 與 Kubernetes，讓它從小工具升級成完整的 backend/data engineering/LLM app 作品。
+This project should demonstrate backend engineering, data pipeline design, automation, API design, crawler integration, notification workflows, and practical deployment thinking.

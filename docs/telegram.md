@@ -21,10 +21,16 @@ https://api.telegram.org/bot<TOKEN>/getUpdates
 
 ## 3. Send a Test Message
 
-```powershell
-$env:TELEGRAM_BOT_TOKEN="your-bot-token"
-$env:TELEGRAM_CHAT_ID="your-chat-id"
+Copy `.env.example` to `.env`, then fill in:
 
+```powershell
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_CHAT_ID=your-chat-id
+```
+
+The app reads `.env` and `.env.local` for local CLI/API runs. Airflow reads `airflow/.env` through Docker Compose. Real environment variables still take priority over values in `.env`.
+
+```powershell
 python -m job_intel test-telegram
 ```
 
@@ -43,3 +49,5 @@ python -m job_intel run-pipeline `
 ```
 
 You can also pass `--telegram-token` and `--telegram-chat-id` directly, but environment variables are safer for local development, Airflow, Docker, and Kubernetes secrets.
+
+Telegram digests are deduplicated by `source + external_id + chat_id`. Once a job is successfully sent to a chat, later runs skip it instead of pushing the same opportunity again.

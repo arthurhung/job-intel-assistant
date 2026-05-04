@@ -33,6 +33,17 @@ CREATE TABLE IF NOT EXISTS match_runs (
     notified_count INTEGER,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS telegram_sent_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL,
+    external_id TEXT NOT NULL,
+    chat_id TEXT NOT NULL,
+    first_sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    last_sent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    send_count INTEGER NOT NULL DEFAULT 1,
+    UNIQUE(source, external_id, chat_id)
+);
 """
 
 

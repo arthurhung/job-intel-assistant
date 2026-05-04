@@ -13,6 +13,7 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 - Scores job-resume matches
 - Writes a Markdown match report
 - Sends top matches to Telegram
+- Skips Telegram jobs that were already sent to the same chat
 - Runs as a scheduled Airflow pipeline with Docker Compose
 
 ## Quick Start
@@ -91,11 +92,11 @@ It also includes crawler actions that import normalized jobs through the same pi
 
 ## Telegram Notifications
 
-Create a Telegram bot with `@BotFather`, send the bot a message, then set these environment variables:
+Create a Telegram bot with `@BotFather`, send the bot a message, then copy `.env.example` to `.env` and set:
 
 ```powershell
-$env:TELEGRAM_BOT_TOKEN="your-bot-token"
-$env:TELEGRAM_CHAT_ID="your-chat-id"
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_CHAT_ID=your-chat-id
 ```
 
 Verify the credentials:
@@ -117,6 +118,10 @@ python -m job_intel run-pipeline `
 ```
 
 See [docs/telegram.md](docs/telegram.md) for setup details.
+
+The app reads `.env` and `.env.local` automatically. Existing environment variables take priority. Airflow reads `airflow/.env` through Docker Compose.
+
+Telegram notifications are deduplicated by `source + external_id + chat_id`, so the same job is not pushed again after a successful send.
 
 ## CSV Format
 

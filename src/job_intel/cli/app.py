@@ -106,6 +106,7 @@ def handle_match(args: argparse.Namespace) -> int:
     if args.notify_telegram:
         notified = send_match_digest(
             results,
+            db_path=Path(args.db),
             token=args.telegram_token,
             chat_id=args.telegram_chat_id,
             min_score=args.telegram_min_score,

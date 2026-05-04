@@ -18,6 +18,8 @@ class JobPosting:
 
 @dataclass(frozen=True)
 class MatchResult:
+    source: str
+    external_id: str
     title: str
     company: str
     location: str

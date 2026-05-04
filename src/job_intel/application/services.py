@@ -96,6 +96,7 @@ def create_match_run(
     if notify_telegram:
         notified_count = send_match_digest(
             results,
+            db_path=db_path,
             min_score=telegram_min_score,
             limit=telegram_limit,
         )

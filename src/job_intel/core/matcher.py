@@ -13,7 +13,7 @@ def match_jobs(conn: sqlite3.Connection, resume_text: str) -> list[MatchResult]:
 
     rows = conn.execute(
         """
-        SELECT source, title, company, location, url, description
+        SELECT source, external_id, title, company, location, url, description
         FROM jobs
         ORDER BY posted_at DESC, updated_at DESC
         """
@@ -33,6 +33,8 @@ def match_jobs(conn: sqlite3.Connection, resume_text: str) -> list[MatchResult]:
         score = (len(matched) / len(job_skills) * 100) if job_skills else 0.0
         results.append(
             MatchResult(
+                source=row["source"],
+                external_id=row["external_id"],
                 title=row["title"],
                 company=row["company"],
                 location=row["location"],
