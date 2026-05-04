@@ -3,6 +3,7 @@ from __future__ import annotations
 from job_intel.crawlers.base import JobCrawler
 from job_intel.crawlers.arbeitnow import ArbeitnowCrawler
 from job_intel.crawlers.cake import CakeCrawler
+from job_intel.crawlers.contact_taiwan import ContactTaiwanCrawler
 from job_intel.crawlers.himalayas import HimalayasCrawler
 from job_intel.crawlers.remotive import RemotiveCrawler
 from job_intel.crawlers.remoteok import RemoteOkCrawler
@@ -15,6 +16,7 @@ from job_intel.core.models import JobPosting
 CRAWLERS: dict[str, type[JobCrawler]] = {
     ArbeitnowCrawler.source: ArbeitnowCrawler,
     CakeCrawler.source: CakeCrawler,
+    ContactTaiwanCrawler.source: ContactTaiwanCrawler,
     HimalayasCrawler.source: HimalayasCrawler,
     RemotiveCrawler.source: RemotiveCrawler,
     RemoteOkCrawler.source: RemoteOkCrawler,

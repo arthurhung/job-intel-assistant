@@ -89,6 +89,7 @@ It also includes crawler actions that import normalized jobs through the same pi
 - `yourator`: Taiwan startup and digital jobs from Yourator
 - `cake`: Taiwan jobs from Cake
 - `taiwanjobs`: Taiwan public job listings from TaiwanJobs OpenData
+- `contacttaiwan`: Taiwan international talent jobs from Contact TAIWAN
 
 ## Telegram Notifications
 
