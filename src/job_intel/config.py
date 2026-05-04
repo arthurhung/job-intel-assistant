@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from collections.abc import Iterable
 from pathlib import Path
 
 
@@ -23,10 +24,11 @@ class AppSettings:
 def load_env_files() -> None:
     for env_path in ENV_FILES:
         if env_path.is_file():
-            _load_env_file(env_path)
+            load_env_file(env_path)
 
 
-def _load_env_file(env_path: Path) -> None:
+def load_env_file(env_path: Path, *, allowed_keys: Iterable[str] | None = None) -> None:
+    allowed = set(allowed_keys) if allowed_keys is not None else None
     for raw_line in env_path.read_text(encoding="utf-8-sig").splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#") or "=" not in line:
@@ -35,6 +37,8 @@ def _load_env_file(env_path: Path) -> None:
         key, value = line.split("=", 1)
         key = key.strip()
         value = value.strip().strip("'\"")
+        if allowed is not None and key not in allowed:
+            continue
         if key and key not in os.environ:
             os.environ[key] = value
 

@@ -6,7 +6,7 @@ from pathlib import Path
 import urllib.parse
 import urllib.request
 
-from job_intel.config import load_env_files
+from job_intel.config import ROOT_DIR, load_env_file, load_env_files
 from job_intel.core.models import MatchResult
 from job_intel.db import (
     filter_unsent_telegram_matches,
@@ -16,6 +16,7 @@ from job_intel.db import (
 
 
 TELEGRAM_API_BASE = "https://api.telegram.org"
+TELEGRAM_ENV_KEYS = ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID")
 
 
 class TelegramConfigError(RuntimeError):
@@ -31,7 +32,7 @@ def send_match_digest(
     min_score: float = 70.0,
     limit: int = 5,
 ) -> int:
-    load_env_files()
+    load_telegram_env()
     token = token or os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
@@ -69,7 +70,7 @@ def send_test_message(
     chat_id: str | None = None,
     text: str = "Job Intel Assistant Telegram test message.",
 ) -> None:
-    load_env_files()
+    load_telegram_env()
     token = token or os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
     if not token or not chat_id:
@@ -78,6 +79,13 @@ def send_test_message(
         )
 
     _send_message(token=token, chat_id=chat_id, text=text)
+
+
+def load_telegram_env() -> None:
+    load_env_files()
+    airflow_env = ROOT_DIR / "airflow" / ".env"
+    if airflow_env.is_file():
+        load_env_file(airflow_env, allowed_keys=TELEGRAM_ENV_KEYS)
 
 
 def _format_digest(results: list[MatchResult], *, min_score: float) -> str:
