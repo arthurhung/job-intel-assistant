@@ -19,7 +19,7 @@ export function fetchMatchRuns() {
   return requestJson("/api/match-runs");
 }
 
-export function runCrawler(source) {
+export function runCrawler(source = "all") {
   return requestJson("/api/crawl", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

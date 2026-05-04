@@ -136,6 +136,31 @@ h3 {
   font-weight: 700;
 }
 
+.source-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 11px;
+  background: #fbfcfa;
+}
+
+.source-summary span,
+.match-main em,
+.source-chip {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.source-summary strong {
+  color: var(--accent-dark);
+}
+
 textarea {
   min-height: 260px;
   resize: vertical;
@@ -320,6 +345,7 @@ input[type="range"] {
 }
 
 .match-main strong,
+.match-main em,
 .match-main small {
   display: block;
   overflow: hidden;
@@ -330,6 +356,11 @@ input[type="range"] {
 .match-main small {
   margin-top: 4px;
   color: var(--muted);
+}
+
+.match-main em {
+  margin-top: 3px;
+  color: var(--accent-dark);
 }
 
 .score {
@@ -402,6 +433,16 @@ input[type="range"] {
 .empty-state p {
   color: var(--muted);
   line-height: 1.6;
+}
+
+.source-chip {
+  display: inline-flex;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--accent-dark);
+  background: #f7fcfa;
 }
 
 .skill-group {

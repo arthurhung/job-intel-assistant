@@ -1,4 +1,4 @@
-export const DEFAULT_CRAWLER_SOURCE = "remoteok";
+export const DEFAULT_CRAWLER_SOURCE = "all";
 
 export const DEFAULT_RESUME = [
   "Python backend engineer with experience in Airflow ETL pipelines, Docker deployments, PostgreSQL, Redis, SQL, AWS S3, data quality, web crawlers, and LLM workflow automation.",

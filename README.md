@@ -20,8 +20,7 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 
 ```powershell
 python -m pip install -e .
-python -m job_intel crawl --source taiwan
-python -m job_intel crawl --source remoteok
+python -m job_intel crawl
 python -m job_intel match --resume C:\path\to\resume.pdf --out reports\match_report.md
 ```
 
@@ -29,7 +28,6 @@ Run the full local pipeline:
 
 ```powershell
 python -m job_intel run-pipeline `
-  --source taiwan `
   --resume C:\path\to\resume.pdf `
   --out reports\match_report.md `
   --notify-telegram `
@@ -75,12 +73,13 @@ Then visit:
 http://127.0.0.1:8000
 ```
 
-The dashboard lets you upload or paste resume text, run matching against imported jobs, filter by score/skill/company, inspect matched and missing skills, review recent match runs, and optionally send a Telegram digest.
+The dashboard lets you upload or paste resume text, crawl all configured sources, run matching against imported jobs, filter by score/skill/company/source, inspect matched and missing skills, review recent match runs, and optionally send a Telegram digest.
 
 Matching is intentionally scoped to Taiwan-based or open remote jobs. Country-restricted remote roles outside Taiwan are skipped before import and ignored during matching.
 
 It also includes crawler actions that import normalized jobs through the same pipeline:
 
+- `all`: default source that crawls every configured Taiwan and open-remote source
 - `remotive`: remote jobs from the public Remotive API
 - `remoteok`: remote jobs from the public Remote OK API
 - `himalayas`: remote jobs from the public Himalayas API
@@ -111,7 +110,6 @@ Run the full crawler + matcher pipeline with Telegram enabled:
 
 ```powershell
 python -m job_intel run-pipeline `
-  --source taiwan `
   --resume C:\path\to\resume.pdf `
   --out reports\match_report.md `
   --notify-telegram `

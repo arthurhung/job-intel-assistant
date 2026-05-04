@@ -12,9 +12,6 @@ export function ControlPanel({
   setNotifyTelegram,
   telegramLimit,
   setTelegramLimit,
-  crawlerSources,
-  crawlerSource,
-  setCrawlerSource,
   crawling,
   loading,
   runMatch,
@@ -24,20 +21,10 @@ export function ControlPanel({
 
   return (
     <aside className="control-panel">
-      <label className="field-label" htmlFor="crawler-source">
-        Crawler source
-      </label>
-      <select
-        id="crawler-source"
-        value={crawlerSource}
-        onChange={(event) => setCrawlerSource(event.target.value)}
-      >
-        {crawlerSources.map((source) => (
-          <option key={source} value={source}>
-            {source}
-          </option>
-        ))}
-      </select>
+      <div className="source-summary">
+        <span>Crawler</span>
+        <strong>All sources</strong>
+      </div>
       <label className="upload-box">
         <span>{uploadingResume ? "Parsing resume..." : "Upload resume to fill text"}</span>
         <small>{resumeFileName || "PDF or TXT, then edit below"}</small>

@@ -37,7 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     import_parser.set_defaults(handler=handle_import_jobs)
 
     crawl_parser = subparsers.add_parser("crawl", help="Crawl jobs from a configured source")
-    crawl_parser.add_argument("--source", default="remoteok", choices=available_crawlers(), help="Crawler source")
+    crawl_parser.add_argument("--source", default="all", choices=available_crawlers(), help="Crawler source")
     crawl_parser.set_defaults(handler=handle_crawl)
 
     match_parser = subparsers.add_parser("match", help="Match imported jobs against a resume")
@@ -47,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
     match_parser.set_defaults(handler=handle_match)
 
     pipeline_parser = subparsers.add_parser("run-pipeline", help="Crawl, match, report, and optionally notify")
-    pipeline_parser.add_argument("--source", default="taiwan", choices=available_crawlers(), help="Crawler source")
+    pipeline_parser.add_argument("--source", default="all", choices=available_crawlers(), help="Crawler source")
     pipeline_parser.add_argument("--resume", required=True, help="Path to resume .pdf or .txt")
     pipeline_parser.add_argument("--out", default="reports/match_report.md", help="Markdown report path")
     add_telegram_options(pipeline_parser, include_credentials=False)

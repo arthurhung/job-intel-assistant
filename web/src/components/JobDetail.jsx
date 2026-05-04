@@ -16,6 +16,7 @@ export function JobDetail({ job }) {
         <h2>{job.title}</h2>
         <span>{job.score.toFixed(1)}</span>
       </div>
+      <div className="source-chip">{job.source || "unknown source"}</div>
       <p className="company-line">{`${job.company} - ${job.location || "Remote/unspecified"}`}</p>
       <SkillGroup title="Matched skills" skills={job.matched_skills} tone="matched" />
       <SkillGroup title="Missing skills" skills={job.missing_skills} tone="missing" />

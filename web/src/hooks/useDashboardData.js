@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   createMatches,
-  fetchCrawlers,
   fetchJobs,
   fetchMatchRuns,
   parseResume,
@@ -19,8 +18,6 @@ export function useDashboardData() {
   const [minScore, setMinScore] = useState(70);
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-  const [crawlerSources, setCrawlerSources] = useState([DEFAULT_CRAWLER_SOURCE]);
-  const [crawlerSource, setCrawlerSource] = useState(DEFAULT_CRAWLER_SOURCE);
   const [notifyTelegram, setNotifyTelegram] = useState(false);
   const [telegramLimit, setTelegramLimit] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -32,24 +29,15 @@ export function useDashboardData() {
     setJobs(await fetchJobs());
   }, []);
 
-  const loadCrawlers = useCallback(async () => {
-    const data = await fetchCrawlers();
-    const sources = data.sources || [DEFAULT_CRAWLER_SOURCE];
-    setCrawlerSources(sources);
-    setCrawlerSource((current) =>
-      sources.includes(current) ? current : sources[0] || DEFAULT_CRAWLER_SOURCE
-    );
-  }, []);
-
   const loadMatchRuns = useCallback(async () => {
     setMatchRuns(await fetchMatchRuns());
   }, []);
 
   useEffect(() => {
-    Promise.all([loadJobs(), loadCrawlers(), loadMatchRuns()]).catch((error) => {
+    Promise.all([loadJobs(), loadMatchRuns()]).catch((error) => {
       setMessage(error.message);
     });
-  }, [loadJobs, loadCrawlers, loadMatchRuns]);
+  }, [loadJobs, loadMatchRuns]);
 
   const filteredMatches = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -59,6 +47,7 @@ export function useDashboardData() {
       return [
         item.title,
         item.company,
+        item.source,
         item.location,
         item.matched_skills.join(" "),
         item.missing_skills.join(" "),
@@ -92,7 +81,7 @@ export function useDashboardData() {
   }
 
   async function crawlSelectedJobs() {
-    const data = await runCrawler(crawlerSource);
+    const data = await runCrawler(DEFAULT_CRAWLER_SOURCE);
     await loadJobs();
     return data;
   }
@@ -143,7 +132,7 @@ export function useDashboardData() {
           ? ` Skipped ${crawlResult.filtered_count} non-Taiwan/non-remote job(s).`
           : "";
       setMessage(
-        `Imported ${crawlResult.imported_count} job(s) from ${crawlResult.source}.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
+        `Imported ${crawlResult.imported_count} job(s) from all sources.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
       );
     } catch (error) {
       setMessage(error.message);
@@ -166,9 +155,6 @@ export function useDashboardData() {
     setQuery,
     selectedJob,
     setSelectedJob,
-    crawlerSources,
-    crawlerSource,
-    setCrawlerSource,
     notifyTelegram,
     setNotifyTelegram,
     telegramLimit,

@@ -27,7 +27,7 @@ Status: in progress.
 - Add crawler adapters behind a shared interface.
 - Normalize jobs into `source`, `external_id`, `title`, `company`, `location`, `url`, `description`, `salary`, and `posted_at`.
 - Deduplicate jobs with `source + external_id`.
-- Support Taiwan-focused sources through the `taiwan` aggregate crawler.
+- Support all configured Taiwan and open-remote sources through the default `all` aggregate crawler.
 - Keep non-Taiwan, country-restricted remote roles out of the matching flow.
 
 Next improvements:
@@ -88,7 +88,7 @@ Status: in progress.
 - FastAPI backend.
 - React dashboard.
 - Resume upload or pasted resume text.
-- Crawler controls.
+- One-click all-source crawling.
 - Match run history.
 - Taiwan/open-remote filtering.
 - Optional Telegram digest from the dashboard.

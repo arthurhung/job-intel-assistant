@@ -21,7 +21,7 @@ crawl Taiwan/open-remote jobs
 CLI equivalent:
 
 ```powershell
-python -m job_intel run-pipeline --source taiwan --resume C:\path\to\resume.pdf --notify-telegram
+python -m job_intel run-pipeline --resume C:\path\to\resume.pdf --notify-telegram
 ```
 
 ## Environment Variables
@@ -29,7 +29,7 @@ python -m job_intel run-pipeline --source taiwan --resume C:\path\to\resume.pdf 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `JOB_INTEL_RESUME_PATH` | required | Path to a `.pdf` or `.txt` resume |
-| `JOB_INTEL_CRAWLER_SOURCE` | `taiwan` | Crawler source |
+| `JOB_INTEL_CRAWLER_SOURCE` | `all` | Crawler source |
 | `JOB_INTEL_DB_PATH` | `data/job_intel.sqlite3` | SQLite database path |
 | `JOB_INTEL_REPORT_PATH` | `reports/match_report.md` | Markdown report output path |
 | `JOB_INTEL_NOTIFY_TELEGRAM` | `false` | Send Telegram digest when `true`; keep `false` until bot credentials are configured |
@@ -81,7 +81,7 @@ Then find the `job_intel_daily` DAG, unpause it, and trigger it manually.
 To make it a real daily Telegram alert, set these values in `airflow/.env`:
 
 ```text
-JOB_INTEL_CRAWLER_SOURCE=taiwan
+JOB_INTEL_CRAWLER_SOURCE=all
 JOB_INTEL_NOTIFY_TELEGRAM=true
 JOB_INTEL_TELEGRAM_MIN_SCORE=70
 JOB_INTEL_TELEGRAM_LIMIT=5

@@ -40,7 +40,6 @@ If the bot and chat ID are correct, you should receive a Telegram message immedi
 
 ```powershell
 python -m job_intel run-pipeline `
-  --source taiwan `
   --resume C:\path\to\resume.pdf `
   --out reports\match_report.md `
   --notify-telegram `
