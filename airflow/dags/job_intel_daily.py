@@ -75,26 +75,20 @@ def job_intel_daily() -> None:
     @task
     def crawl_and_import_jobs() -> dict:
         from job_intel.config import get_settings
-        from job_intel.crawlers import crawl_jobs
-        from job_intel.core.job_filters import filter_taiwan_or_remote_jobs
-        from job_intel.db import session
-        from job_intel.db.importer import upsert_jobs
+        from job_intel.application.services import run_crawler
 
         settings = get_settings()
         source = os.getenv("JOB_INTEL_CRAWLER_SOURCE", "all")
-        crawled_jobs = crawl_jobs(source)
-        scoped_jobs = filter_taiwan_or_remote_jobs(
-            crawled_jobs,
+        result = run_crawler(
+            _db_path(),
+            source=source,
             allowed_location_keywords=settings.allowed_location_keywords or None,
         )
-        with session(_db_path()) as conn:
-            imported_count = upsert_jobs(conn, scoped_jobs)
-
         return {
-            "source": source,
-            "crawled_count": len(crawled_jobs),
-            "imported_count": imported_count,
-            "filtered_count": len(crawled_jobs) - len(scoped_jobs),
+            "source": result["source"],
+            "crawled_count": result["crawled_count"],
+            "imported_count": result["imported_count"],
+            "filtered_count": result["filtered_count"],
         }
 
     @task

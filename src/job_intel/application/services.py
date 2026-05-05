@@ -82,6 +82,7 @@ def run_crawler(db_path: Path, *, source: str, allowed_location_keywords: tuple[
         imported_count = upsert_jobs(conn, jobs)
     return {
         "source": source,
+        "crawled_count": len(crawled_jobs),
         "imported_count": imported_count,
         "filtered_count": len(crawled_jobs) - len(jobs),
         "available_sources": available_crawlers(),
