@@ -38,6 +38,7 @@ def job_intel_daily() -> None:
             db_path=Path(os.getenv("JOB_INTEL_DB_PATH", "data/job_intel.sqlite3")),
             report_path=Path(os.getenv("JOB_INTEL_REPORT_PATH", "reports/match_report.md")),
             notify_telegram=os.getenv("JOB_INTEL_NOTIFY_TELEGRAM", "false").lower() == "true",
+            use_llm_analysis=os.getenv("JOB_INTEL_USE_LLM_ANALYSIS", "false").lower() == "true",
             telegram_min_score=float(os.getenv("JOB_INTEL_TELEGRAM_MIN_SCORE", "70")),
             telegram_limit=int(os.getenv("JOB_INTEL_TELEGRAM_LIMIT", "5")),
         )

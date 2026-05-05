@@ -23,7 +23,11 @@ export function MatchList({ matches, selectedJob, setSelectedJob }) {
             <em>{item.source || "unknown source"}</em>
             <small>{`${item.company} - ${item.location || "Remote/unspecified"}`}</small>
           </span>
-          <span className="score">{item.score.toFixed(1)}</span>
+          <span className="score">
+            {item.llm_score !== null && item.llm_score !== undefined
+              ? item.llm_score.toFixed(1)
+              : item.score.toFixed(1)}
+          </span>
         </button>
       ))}
     </div>

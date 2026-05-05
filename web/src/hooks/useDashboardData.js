@@ -19,6 +19,7 @@ export function useDashboardData() {
   const [query, setQuery] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
   const [selectedLocations, setSelectedLocations] = useState(LOCATION_OPTIONS.map((option) => option.value));
+  const [useLlmAnalysis, setUseLlmAnalysis] = useState(false);
   const [notifyTelegram, setNotifyTelegram] = useState(false);
   const [telegramLimit, setTelegramLimit] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -90,6 +91,7 @@ export function useDashboardData() {
   async function matchCurrentJobs() {
     const data = await createMatches({
       resume_text: resumeText,
+      use_llm_analysis: useLlmAnalysis,
       notify_telegram: notifyTelegram,
       telegram_min_score: Number(minScore),
       telegram_limit: Number(telegramLimit),
@@ -180,6 +182,8 @@ export function useDashboardData() {
     locationOptions: LOCATION_OPTIONS,
     selectedLocations,
     toggleLocation,
+    useLlmAnalysis,
+    setUseLlmAnalysis,
     notifyTelegram,
     setNotifyTelegram,
     telegramLimit,

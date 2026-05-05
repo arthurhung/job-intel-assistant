@@ -15,6 +15,7 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 - Sends top matches to Telegram
 - Skips Telegram jobs that were already sent to the same chat
 - Includes source, location, score, skills, recommendation reason, and job URL in Telegram digests
+- Optionally uses an LLM to judge resume-job fit and explain recommendations
 - Runs as a scheduled Airflow pipeline with Docker Compose
 
 ## Quick Start
@@ -128,6 +129,26 @@ See [docs/telegram.md](docs/telegram.md) for setup details.
 The app reads `.env` and `.env.local` automatically. Existing environment variables take priority. Airflow reads `airflow/.env` through Docker Compose.
 
 Telegram notifications are deduplicated by `source + external_id + chat_id`, so the same job is not pushed again after a successful send.
+
+## LLM Fit Analysis
+
+Set an OpenAI API key to enable optional LLM-based fit analysis:
+
+```text
+OPENAI_API_KEY=your-api-key
+OPENAI_MODEL=gpt-4o-mini
+```
+
+Then run:
+
+```powershell
+python -m job_intel run-pipeline `
+  --resume C:\path\to\resume.pdf `
+  --use-llm-analysis `
+  --notify-telegram
+```
+
+The deterministic skill score remains the fallback. When LLM analysis is enabled, the top matches also receive an LLM fit score, recommendation note, and concerns.
 
 ## CSV Format
 

@@ -18,6 +18,20 @@ export function JobDetail({ job }) {
       </div>
       <div className="source-chip">{job.source || "unknown source"}</div>
       <p className="company-line">{`${job.company} - ${job.location || "Remote/unspecified"}`}</p>
+      {job.llm_score !== null && job.llm_score !== undefined ? (
+        <section className="llm-panel">
+          <h3>LLM Fit</h3>
+          <strong>{job.llm_score.toFixed(1)}</strong>
+          <p>{job.llm_recommendation || "No LLM recommendation provided."}</p>
+          {job.llm_concerns?.length ? (
+            <ul>
+              {job.llm_concerns.map((concern) => (
+                <li key={concern}>{concern}</li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
       <SkillGroup title="Matched skills" skills={job.matched_skills} tone="matched" />
       <SkillGroup title="Missing skills" skills={job.missing_skills} tone="missing" />
       <h3>Summary</h3>

@@ -10,6 +10,8 @@ export function ControlPanel({
   setQuery,
   notifyTelegram,
   setNotifyTelegram,
+  useLlmAnalysis,
+  setUseLlmAnalysis,
   telegramLimit,
   setTelegramLimit,
   locationOptions,
@@ -86,6 +88,14 @@ export function ControlPanel({
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
+      <label className="toggle-row">
+        <input
+          type="checkbox"
+          checked={useLlmAnalysis}
+          onChange={(event) => setUseLlmAnalysis(event.target.checked)}
+        />
+        <span>Use LLM fit analysis</span>
+      </label>
       <label className="toggle-row">
         <input
           type="checkbox"

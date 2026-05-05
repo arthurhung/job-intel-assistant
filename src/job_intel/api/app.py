@@ -24,6 +24,7 @@ from job_intel.application.services import (
     parse_resume_bytes,
     run_crawler,
 )
+from job_intel.llm import LLMAnalysisError, LLMConfigError
 from job_intel.notifications.telegram import TelegramConfigError
 
 
@@ -81,13 +82,16 @@ def create_matches(request: MatchRequest) -> dict:
         return create_match_run(
             settings.db_path,
             resume_text=request.resume_text,
+            use_llm_analysis=request.use_llm_analysis,
             notify_telegram=request.notify_telegram,
             telegram_min_score=request.telegram_min_score,
             telegram_limit=request.telegram_limit,
             allowed_location_keywords=tuple(request.allowed_locations) or settings.allowed_location_keywords,
         )
-    except TelegramConfigError as exc:
+    except (TelegramConfigError, LLMConfigError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except LLMAnalysisError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get("/api/match-runs", response_model=list[MatchRunResponse])

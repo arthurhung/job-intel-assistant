@@ -52,3 +52,5 @@ You can also pass `--telegram-token` and `--telegram-chat-id` directly, but envi
 Telegram digests are deduplicated by `source + external_id + chat_id`. Once a job is successfully sent to a chat, later runs skip it instead of pushing the same opportunity again.
 
 Each digest item includes the job title, company, source, location, score, recommendation reason, matched skills, missing skills, compact summary, and direct job URL.
+
+When LLM analysis is enabled, Telegram digests also include the LLM fit score, recommendation note, and concerns.

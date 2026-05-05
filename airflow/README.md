@@ -33,11 +33,14 @@ python -m job_intel run-pipeline --resume C:\path\to\resume.pdf --notify-telegra
 | `JOB_INTEL_DB_PATH` | `data/job_intel.sqlite3` | SQLite database path |
 | `JOB_INTEL_REPORT_PATH` | `reports/match_report.md` | Markdown report output path |
 | `JOB_INTEL_ALLOWED_LOCATIONS` | optional | Comma-separated location keywords, for example `taipei,台北,新北,taoyuan,桃園,remote` |
+| `JOB_INTEL_USE_LLM_ANALYSIS` | `false` | Use OpenAI to add LLM fit scores and recommendation notes |
 | `JOB_INTEL_NOTIFY_TELEGRAM` | `false` | Send Telegram digest when `true`; keep `false` until bot credentials are configured |
 | `JOB_INTEL_TELEGRAM_MIN_SCORE` | `70` | Minimum score for notification |
 | `JOB_INTEL_TELEGRAM_LIMIT` | `5` | Maximum Telegram items |
 | `TELEGRAM_BOT_TOKEN` | required for notification | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | required for notification | Telegram chat ID |
+| `OPENAI_API_KEY` | required for LLM analysis | OpenAI API key |
+| `OPENAI_MODEL` | `gpt-4o-mini` | OpenAI model for fit analysis |
 
 ## Running With Docker Compose
 

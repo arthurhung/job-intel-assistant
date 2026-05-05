@@ -88,25 +88,29 @@ def _format_digest(results: list[MatchResult], *, min_score: float) -> str:
         "",
     ]
     for index, item in enumerate(results, start=1):
-        lines.extend(
-            [
-                f"{index}. {item.title}",
-                f"Company: {item.company or '-'}",
-                f"Source: {item.source or '-'}",
-                f"Location: {item.location or '-'}",
-                f"Score: {item.score:.1f}",
-                f"Why: {_recommendation_reason(item)}",
-                f"Matched skills: {_format_skills(item.matched_skills)}",
-                f"Missing skills: {_format_skills(item.missing_skills)}",
-                f"Summary: {_truncate(item.summary, 220)}",
-                item.url or "",
-                "",
-            ]
-        )
+        item_lines = [
+            f"{index}. {item.title}",
+            f"Company: {item.company or '-'}",
+            f"Source: {item.source or '-'}",
+            f"Location: {item.location or '-'}",
+            f"Score: {item.score:.1f}",
+            f"LLM fit: {item.llm_score:.1f}" if item.llm_score is not None else "",
+            f"Why: {_recommendation_reason(item)}",
+            f"LLM note: {item.llm_recommendation}" if item.llm_recommendation else "",
+            f"Matched skills: {_format_skills(item.matched_skills)}",
+            f"Missing skills: {_format_skills(item.missing_skills)}",
+            f"Concerns: {_format_skills(item.llm_concerns or [])}" if item.llm_concerns else "",
+            f"Summary: {_truncate(item.summary, 220)}",
+            item.url or "",
+            "",
+        ]
+        lines.extend(line for line in item_lines if line)
     return _truncate_message("\n".join(lines).strip())
 
 
 def _recommendation_reason(item: MatchResult) -> str:
+    if item.llm_recommendation:
+        return item.llm_recommendation
     if item.matched_skills:
         return f"Matches {len(item.matched_skills)} skill(s) from your resume."
     if item.score >= 90:

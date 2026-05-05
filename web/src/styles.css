@@ -478,6 +478,28 @@ input[type="range"] {
   margin: 18px 0;
 }
 
+.llm-panel {
+  margin: 14px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfa;
+}
+
+.llm-panel strong {
+  display: block;
+  color: var(--accent-dark);
+  font-size: 26px;
+  font-weight: 850;
+}
+
+.llm-panel p,
+.llm-panel ul {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .skill-list {
   display: flex;
   flex-wrap: wrap;

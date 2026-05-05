@@ -15,6 +15,7 @@ from job_intel.core.job_filters import filter_taiwan_or_remote_jobs, is_taiwan_o
 from job_intel.core.matcher import match_jobs
 from job_intel.core.models import MatchResult
 from job_intel.core.resume import load_resume_text
+from job_intel.llm import analyze_matches_with_llm
 from job_intel.notifications.telegram import send_match_digest
 
 
@@ -91,6 +92,7 @@ def create_match_run(
     db_path: Path,
     *,
     resume_text: str,
+    use_llm_analysis: bool,
     notify_telegram: bool,
     telegram_min_score: float,
     telegram_limit: int,
@@ -102,6 +104,11 @@ def create_match_run(
             resume_text,
             allowed_location_keywords=allowed_location_keywords or None,
         )
+    results = analyze_matches_with_llm(
+        results,
+        resume_text=resume_text,
+        enabled=use_llm_analysis,
+    )
 
     notified_count: int | None = None
     if notify_telegram:

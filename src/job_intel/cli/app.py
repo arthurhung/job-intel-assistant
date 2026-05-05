@@ -11,6 +11,7 @@ from job_intel.core.matcher import match_jobs
 from job_intel.pipeline import run_pipeline
 from job_intel.pipeline.report import write_markdown_report
 from job_intel.core.resume import load_resume_text
+from job_intel.llm import LLMAnalysisError, LLMConfigError, analyze_matches_with_llm
 from job_intel.notifications.telegram import TelegramConfigError, send_match_digest, send_test_message
 
 
@@ -23,7 +24,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.handler(args)
-    except TelegramConfigError as exc:
+    except (TelegramConfigError, LLMConfigError, LLMAnalysisError) as exc:
         parser.error(str(exc))
         return 2
 
@@ -44,6 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
     match_parser = subparsers.add_parser("match", help="Match imported jobs against a resume")
     match_parser.add_argument("--resume", required=True, help="Path to resume .pdf or .txt")
     match_parser.add_argument("--out", default="reports/match_report.md", help="Markdown report path")
+    match_parser.add_argument("--use-llm-analysis", action="store_true", help="Use OpenAI to judge job fit")
     add_telegram_options(match_parser)
     match_parser.set_defaults(handler=handle_match)
 
@@ -51,6 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
     pipeline_parser.add_argument("--source", default="all", choices=available_crawlers(), help="Crawler source")
     pipeline_parser.add_argument("--resume", required=True, help="Path to resume .pdf or .txt")
     pipeline_parser.add_argument("--out", default="reports/match_report.md", help="Markdown report path")
+    pipeline_parser.add_argument("--use-llm-analysis", action="store_true", help="Use OpenAI to judge job fit")
     add_telegram_options(pipeline_parser, include_credentials=False)
     pipeline_parser.set_defaults(handler=handle_pipeline)
 
@@ -108,6 +111,11 @@ def handle_match(args: argparse.Namespace) -> int:
             resume_text,
             allowed_location_keywords=DEFAULT_SETTINGS.allowed_location_keywords or None,
         )
+    results = analyze_matches_with_llm(
+        results,
+        resume_text=resume_text,
+        enabled=args.use_llm_analysis,
+    )
 
     write_markdown_report(results, Path(args.out))
     print(f"Wrote {len(results)} matches to {args.out}")
@@ -132,6 +140,7 @@ def handle_pipeline(args: argparse.Namespace) -> int:
         db_path=Path(args.db),
         report_path=Path(args.out),
         notify_telegram=args.notify_telegram,
+        use_llm_analysis=args.use_llm_analysis,
         telegram_min_score=args.telegram_min_score,
         telegram_limit=args.telegram_limit,
     )

@@ -19,6 +19,7 @@ class JobResponse(BaseModel):
 
 class MatchRequest(BaseModel):
     resume_text: str = Field(min_length=1)
+    use_llm_analysis: bool = False
     notify_telegram: bool = False
     telegram_min_score: float = 70.0
     telegram_limit: int = Field(default=5, ge=1, le=20)

@@ -12,6 +12,7 @@ from job_intel.core.job_filters import filter_taiwan_or_remote_jobs
 from job_intel.core.matcher import match_jobs
 from job_intel.pipeline.report import write_markdown_report
 from job_intel.core.resume import load_resume_text
+from job_intel.llm import analyze_matches_with_llm
 from job_intel.notifications.telegram import send_match_digest
 
 
@@ -33,6 +34,7 @@ def run_pipeline(
     db_path: Path,
     report_path: Path,
     notify_telegram: bool = False,
+    use_llm_analysis: bool = False,
     telegram_min_score: float = 70.0,
     telegram_limit: int = 5,
 ) -> PipelineResult:
@@ -50,6 +52,11 @@ def run_pipeline(
             resume_text,
             allowed_location_keywords=settings.allowed_location_keywords or None,
         )
+    results = analyze_matches_with_llm(
+        results,
+        resume_text=resume_text,
+        enabled=use_llm_analysis,
+    )
 
     write_markdown_report(results, report_path)
 

@@ -28,3 +28,6 @@ class MatchResult:
     matched_skills: list[str]
     missing_skills: list[str]
     summary: str
+    llm_score: float | None = None
+    llm_recommendation: str = ""
+    llm_concerns: list[str] | None = None
