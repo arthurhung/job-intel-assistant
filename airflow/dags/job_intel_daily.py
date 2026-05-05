@@ -189,11 +189,15 @@ def job_intel_daily() -> None:
             "used_llm_analysis": match_result["used_llm_analysis"],
         }
 
-    crawl_result = crawl_and_import_jobs()
-    match_result = match_resume(crawl_result)
-    report_result = write_match_report(match_result)
-    telegram_result = send_telegram_digest(match_result)
-    record_match_history(crawl_result, match_result, report_result, telegram_result)
+    crawl = crawl_and_import_jobs()
+    match = match_resume(crawl)
+    report = write_match_report(match)
+    telegram = send_telegram_digest(match)
+    history = record_match_history(crawl, match, report, telegram)
+
+    crawl >> match
+    match >> [report, telegram]
+    [report, telegram] >> history
 
 
 job_intel_daily()
