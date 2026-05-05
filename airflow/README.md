@@ -8,14 +8,14 @@ airflow/dags/job_intel_daily.py
 
 The Docker Compose setup follows Apache Airflow's local Docker quick-start shape: it is for local learning and portfolio demos, not production deployment.
 
-The DAG calls the same reusable Python pipeline as the CLI. The intended daily workflow is:
+The DAG splits the workflow into separate Airflow tasks so each step can be retried and inspected from the UI:
 
 ```text
-crawl Taiwan/open-remote jobs
--> filter by location policy
--> match against resume
--> write report and match history
--> send high-score Telegram digest
+crawl_and_import_jobs
+-> match_resume
+-> write_match_report
+-> send_telegram_digest
+-> record_match_history
 ```
 
 CLI equivalent:
@@ -32,7 +32,8 @@ python -m job_intel run-pipeline --resume C:\path\to\resume.pdf --notify-telegra
 | `JOB_INTEL_CRAWLER_SOURCE` | `all` | Crawler source |
 | `JOB_INTEL_DB_PATH` | `data/job_intel.sqlite3` | SQLite database path |
 | `JOB_INTEL_REPORT_PATH` | `reports/match_report.md` | Markdown report output path |
-| `JOB_INTEL_ALLOWED_LOCATIONS` | optional | Comma-separated location keywords, for example `taipei,台北,新北,taoyuan,桃園,remote` |
+| `JOB_INTEL_AIRFLOW_ARTIFACT_DIR` | `data/airflow` | JSON artifact directory used to pass matches between Airflow tasks |
+| `JOB_INTEL_ALLOWED_LOCATIONS` | optional | Comma-separated location keywords, for example `taipei,台北,臺北,new taipei,新北,taoyuan,桃園,remote` |
 | `JOB_INTEL_USE_LLM_ANALYSIS` | `false` | Use OpenAI to add LLM fit scores and recommendation notes |
 | `JOB_INTEL_NOTIFY_TELEGRAM` | `false` | Send Telegram digest when `true`; keep `false` until bot credentials are configured |
 | `JOB_INTEL_TELEGRAM_MIN_SCORE` | `70` | Minimum score for notification |
@@ -92,6 +93,8 @@ JOB_INTEL_TELEGRAM_MIN_SCORE=70
 JOB_INTEL_TELEGRAM_LIMIT=5
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHAT_ID=...
+OPENAI_API_KEY=...
+JOB_INTEL_USE_LLM_ANALYSIS=true
 ```
 
 To stop the containers:
@@ -108,4 +111,4 @@ docker compose --env-file airflow\.env -f airflow\docker-compose.yml down --volu
 
 ## Why This Shape
 
-The DAG is intentionally thin. Crawling, matching, reporting, notification, and match history live in `job_intel.pipeline`, so the same Telegram alert workflow can run from CLI, Airflow, Docker, or Kubernetes CronJob.
+The DAG keeps orchestration in Airflow and business logic in the `job_intel` package. This makes the task graph easy to observe while still allowing the same workflow pieces to run from CLI, Docker, or a future Kubernetes CronJob.
