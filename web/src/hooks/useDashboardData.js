@@ -136,7 +136,7 @@ export function useDashboardData() {
           ? ` Skipped ${crawlResult.filtered_count} job(s) outside your location scope.`
           : "";
       setMessage(
-        `Imported ${crawlResult.imported_count} job(s) from all sources.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
+        `Crawled ${crawlResult.crawled_count} job(s), imported ${crawlResult.imported_count} from all sources.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
       );
     } catch (error) {
       setMessage(error.message);

@@ -30,6 +30,7 @@ python -m job_intel run-pipeline --resume C:\path\to\resume.pdf --notify-telegra
 | --- | --- | --- |
 | `JOB_INTEL_RESUME_PATH` | required | Path to a `.pdf` or `.txt` resume |
 | `JOB_INTEL_CRAWLER_SOURCE` | `all` | Crawler source |
+| `JOB_INTEL_CRAWLER_LIMIT_PER_SOURCE` | `25` | Maximum jobs to request from each crawler source |
 | `JOB_INTEL_DB_PATH` | `data/job_intel.sqlite3` | SQLite database path |
 | `JOB_INTEL_REPORT_PATH` | `reports/match_report.md` | Markdown report output path |
 | `JOB_INTEL_AIRFLOW_ARTIFACT_DIR` | `data/airflow` | JSON artifact directory used to pass matches between Airflow tasks |

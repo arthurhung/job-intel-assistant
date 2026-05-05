@@ -73,7 +73,10 @@ def parse_resume_bytes(*, filename: str, body: bytes) -> dict:
 
 
 def run_crawler(db_path: Path, *, source: str, allowed_location_keywords: tuple[str, ...] = ()) -> dict:
-    crawled_jobs = crawl_jobs(source)
+    from job_intel.config import get_settings
+
+    settings = get_settings()
+    crawled_jobs = crawl_jobs(source, limit_per_source=settings.crawler_limit_per_source)
     jobs = filter_taiwan_or_remote_jobs(
         crawled_jobs,
         allowed_location_keywords=allowed_location_keywords or None,

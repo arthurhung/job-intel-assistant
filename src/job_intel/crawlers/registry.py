@@ -34,9 +34,13 @@ def available_crawlers() -> list[str]:
     return sorted(CRAWLERS)
 
 
-def crawl_jobs(source: str) -> list[JobPosting]:
+def crawl_jobs(source: str, *, limit_per_source: int | None = None) -> list[JobPosting]:
     crawler_type = CRAWLERS.get(source)
     if crawler_type is None:
         options = ", ".join(available_crawlers())
         raise ValueError(f"Unknown crawler source '{source}'. Available sources: {options}")
-    return crawler_type().crawl()
+    if limit_per_source is None:
+        return crawler_type().crawl()
+    if source in {"all", "taiwan"}:
+        return crawler_type(limit_per_source=limit_per_source).crawl()
+    return crawler_type(limit=limit_per_source).crawl()

@@ -40,7 +40,7 @@ def run_pipeline(
 ) -> PipelineResult:
     settings = get_settings()
     jobs = filter_taiwan_or_remote_jobs(
-        crawl_jobs(source),
+        crawl_jobs(source, limit_per_source=settings.crawler_limit_per_source),
         allowed_location_keywords=settings.allowed_location_keywords or None,
     )
     resume_text = load_resume_text(resume_path)
