@@ -14,6 +14,7 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 - Writes a Markdown match report
 - Sends top matches to Telegram
 - Skips Telegram jobs that were already sent to the same chat
+- Includes source, location, score, skills, recommendation reason, and job URL in Telegram digests
 - Runs as a scheduled Airflow pipeline with Docker Compose
 
 ## Quick Start

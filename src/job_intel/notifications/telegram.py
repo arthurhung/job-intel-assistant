@@ -16,6 +16,8 @@ from job_intel.db import (
 
 
 TELEGRAM_API_BASE = "https://api.telegram.org"
+MAX_MESSAGE_LENGTH = 3900
+MAX_SKILLS = 6
 
 
 class TelegramConfigError(RuntimeError):
@@ -81,20 +83,58 @@ def send_test_message(
 
 
 def _format_digest(results: list[MatchResult], *, min_score: float) -> str:
-    lines = [f"Job Intel matches >= {min_score:.1f}", ""]
+    lines = [
+        f"Job Intel digest: {len(results)} new match(es) >= {min_score:.1f}",
+        "",
+    ]
     for index, item in enumerate(results, start=1):
         lines.extend(
             [
-                f"{index}. {item.title} @ {item.company}",
-                f"Score: {item.score:.1f}",
+                f"{index}. {item.title}",
+                f"Company: {item.company or '-'}",
+                f"Source: {item.source or '-'}",
                 f"Location: {item.location or '-'}",
-                f"Matched: {', '.join(item.matched_skills) or '-'}",
-                f"Missing: {', '.join(item.missing_skills) or '-'}",
+                f"Score: {item.score:.1f}",
+                f"Why: {_recommendation_reason(item)}",
+                f"Matched skills: {_format_skills(item.matched_skills)}",
+                f"Missing skills: {_format_skills(item.missing_skills)}",
+                f"Summary: {_truncate(item.summary, 220)}",
                 item.url or "",
                 "",
             ]
         )
-    return "\n".join(lines).strip()
+    return _truncate_message("\n".join(lines).strip())
+
+
+def _recommendation_reason(item: MatchResult) -> str:
+    if item.matched_skills:
+        return f"Matches {len(item.matched_skills)} skill(s) from your resume."
+    if item.score >= 90:
+        return "Very high score for this role."
+    if item.score >= 70:
+        return "Passes your notification threshold."
+    return "Included by the current score filter."
+
+
+def _format_skills(skills: list[str]) -> str:
+    if not skills:
+        return "-"
+    shown = skills[:MAX_SKILLS]
+    suffix = f" +{len(skills) - len(shown)} more" if len(skills) > len(shown) else ""
+    return ", ".join(shown) + suffix
+
+
+def _truncate(value: str, limit: int) -> str:
+    compact = " ".join(value.split())
+    if len(compact) <= limit:
+        return compact or "-"
+    return compact[: limit - 3].rstrip() + "..."
+
+
+def _truncate_message(value: str) -> str:
+    if len(value) <= MAX_MESSAGE_LENGTH:
+        return value
+    return value[: MAX_MESSAGE_LENGTH - 40].rstrip() + "\n\n[truncated]"
 
 
 def _send_message(*, token: str, chat_id: str, text: str) -> None:
