@@ -9,6 +9,11 @@ from job_intel.core.skills import extract_skills
 from job_intel.db.models import JobRecord
 
 
+RESUME_SKILL_CAP = 8
+SINGLE_SKILL_SCORE_CAP = 55.0
+TWO_SKILL_SCORE_CAP = 75.0
+
+
 def match_jobs(
     conn: Session,
     resume_text: str,
@@ -32,7 +37,7 @@ def match_jobs(
         job_skills = set(extract_skills(row.description + " " + row.title))
         matched = sorted(job_skills & resume_skills)
         missing = sorted(job_skills - resume_skills)
-        score = (len(matched) / len(job_skills) * 100) if job_skills else 0.0
+        score = _score_match(matched_count=len(matched), job_skill_count=len(job_skills), resume_skill_count=len(resume_skills))
         results.append(
             MatchResult(
                 source=row.source,
@@ -49,6 +54,22 @@ def match_jobs(
         )
 
     return sorted(results, key=lambda item: item.score, reverse=True)
+
+
+def _score_match(*, matched_count: int, job_skill_count: int, resume_skill_count: int) -> float:
+    if matched_count == 0 or job_skill_count == 0 or resume_skill_count == 0:
+        return 0.0
+
+    job_coverage = matched_count / job_skill_count
+    resume_relevance = matched_count / min(resume_skill_count, RESUME_SKILL_CAP)
+    score = (job_coverage * 70) + (resume_relevance * 30)
+
+    if matched_count == 1:
+        score = min(score, SINGLE_SKILL_SCORE_CAP)
+    elif matched_count == 2:
+        score = min(score, TWO_SKILL_SCORE_CAP)
+
+    return min(score, 100.0)
 
 
 def _summary(text: str, limit: int = 180) -> str:
