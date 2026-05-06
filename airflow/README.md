@@ -42,7 +42,7 @@ python -m job_intel run-pipeline --resume C:\path\to\resume.pdf --notify-telegra
 | `TELEGRAM_BOT_TOKEN` | required for notification | Telegram bot token |
 | `TELEGRAM_CHAT_ID` | required for notification | Telegram chat ID |
 | `OPENAI_API_KEY` | required for LLM analysis | OpenAI API key |
-| `OPENAI_MODEL` | `gpt-4o-mini` | OpenAI model for fit analysis |
+| `OPENAI_MODEL` | `gpt-5.5` | OpenAI model for fit analysis |
 
 ## Running With Docker Compose
 

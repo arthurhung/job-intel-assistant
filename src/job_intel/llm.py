@@ -11,7 +11,7 @@ from job_intel.core.models import MatchResult
 
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
-DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_MODEL = "gpt-5.5"
 DEFAULT_LLM_LIMIT = 8
 
 

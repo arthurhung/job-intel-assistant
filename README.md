@@ -136,7 +136,7 @@ Set an OpenAI API key to enable optional LLM-based fit analysis:
 
 ```text
 OPENAI_API_KEY=your-api-key
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5.5
 ```
 
 Then run:
