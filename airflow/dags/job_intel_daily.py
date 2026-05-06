@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import pprint
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -89,6 +90,7 @@ def job_intel_daily() -> None:
             "crawled_count": result["crawled_count"],
             "imported_count": result["imported_count"],
             "filtered_count": result["filtered_count"],
+            "source_stats": result.get("source_stats", []),
         }
 
     @task
@@ -183,15 +185,23 @@ def job_intel_daily() -> None:
             "used_llm_analysis": match_result["used_llm_analysis"],
         }
 
+    @task
+    def publish_pipeline_summary(summary: dict) -> dict:
+        print("Job Intel Airflow summary")
+        print(pprint.pformat(summary, sort_dicts=False))
+        return summary
+
     crawl = crawl_and_import_jobs()
     match = match_resume(crawl)
     report = write_match_report(match)
     telegram = send_telegram_digest(match)
     history = record_match_history(crawl, match, report, telegram)
+    summary = publish_pipeline_summary(history)
 
     crawl >> match
     match >> [report, telegram]
     [report, telegram] >> history
+    history >> summary
 
 
 job_intel_daily()

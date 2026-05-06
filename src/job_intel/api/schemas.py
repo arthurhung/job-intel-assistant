@@ -59,4 +59,5 @@ class CrawlResponse(BaseModel):
     crawled_count: int = 0
     imported_count: int
     filtered_count: int = 0
+    source_stats: list[dict] = Field(default_factory=list)
     available_sources: list[str]

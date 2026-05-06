@@ -135,8 +135,11 @@ export function useDashboardData() {
         crawlResult.filtered_count > 0
           ? ` Skipped ${crawlResult.filtered_count} job(s) outside your location scope.`
           : "";
+      const sourceCount = crawlResult.source_stats?.length
+        ? ` across ${crawlResult.source_stats.length} source(s)`
+        : "";
       setMessage(
-        `Crawled ${crawlResult.crawled_count} job(s), imported ${crawlResult.imported_count} from all sources.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
+        `Crawled ${crawlResult.crawled_count} job(s)${sourceCount}, imported ${crawlResult.imported_count} from all sources.${filtered} Matched ${matchResult.matches.length} job(s).${suffix}`
       );
     } catch (error) {
       setMessage(error.message);

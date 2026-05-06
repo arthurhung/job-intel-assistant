@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tempfile
+from collections import Counter
 from dataclasses import asdict
 from pathlib import Path
 
@@ -83,11 +84,23 @@ def run_crawler(db_path: Path, *, source: str, allowed_location_keywords: tuple[
     )
     with session(db_path) as conn:
         imported_count = upsert_jobs(conn, jobs)
+    crawled_by_source = Counter(job.source for job in crawled_jobs)
+    kept_by_source = Counter(job.source for job in jobs)
+    source_stats = [
+        {
+            "source": source_name,
+            "crawled_count": crawled_by_source[source_name],
+            "kept_count": kept_by_source[source_name],
+            "filtered_count": crawled_by_source[source_name] - kept_by_source[source_name],
+        }
+        for source_name in sorted(crawled_by_source)
+    ]
     return {
         "source": source,
         "crawled_count": len(crawled_jobs),
         "imported_count": imported_count,
         "filtered_count": len(crawled_jobs) - len(jobs),
+        "source_stats": source_stats,
         "available_sources": available_crawlers(),
     }
 
