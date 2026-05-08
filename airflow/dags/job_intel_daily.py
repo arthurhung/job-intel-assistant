@@ -129,7 +129,30 @@ def job_intel_daily() -> None:
         }
 
     @task
-    def assess_recommendation_quality(match_result: dict, telegram_result: dict) -> dict:
+    def preview_telegram_candidates(match_result: dict) -> dict:
+        from job_intel.db import filter_unsent_telegram_matches, session
+
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+        if not chat_id:
+            return {"notified_count": None, "enabled": False, "reason": "TELEGRAM_CHAT_ID is not set."}
+
+        matches = _read_matches(match_result["artifact_path"])
+        with session(_db_path()) as conn:
+            candidates = filter_unsent_telegram_matches(
+                conn,
+                matches,
+                chat_id=chat_id,
+                min_score=match_result["min_score"],
+                limit=int(os.getenv("JOB_INTEL_TELEGRAM_LIMIT", "5")),
+            )
+        return {
+            "notified_count": len(candidates),
+            "enabled": _env_bool("JOB_INTEL_NOTIFY_TELEGRAM"),
+            "reason": "Preview of unsent Telegram candidates before final notification.",
+        }
+
+    @task
+    def assess_recommendation_quality(match_result: dict, telegram_preview: dict) -> dict:
         from job_intel.agent import assess_recommendation_quality as assess_quality
         from job_intel.agent import keywords_from_resume
         from job_intel.core.resume import load_resume_text
@@ -139,7 +162,7 @@ def job_intel_daily() -> None:
         decision = assess_quality(
             matches,
             min_score=match_result["min_score"],
-            notified_count=telegram_result["notified_count"],
+            notified_count=telegram_preview["notified_count"],
             followup_keywords=keywords_from_resume(resume_text),
         )
         enabled = _env_bool("JOB_INTEL_AGENT_TOOL_LOOP", True)
@@ -285,8 +308,8 @@ def job_intel_daily() -> None:
 
     crawl = crawl_and_import_jobs()
     initial_match = initial_match_resume(crawl)
-    initial_telegram = {"notified_count": None, "enabled": _env_bool("JOB_INTEL_NOTIFY_TELEGRAM")}
-    quality = assess_recommendation_quality(initial_match, initial_telegram)
+    telegram_preview = preview_telegram_candidates(initial_match)
+    quality = assess_recommendation_quality(initial_match, telegram_preview)
     agent_action = run_agent_tool_loop(quality)
     match = final_match_resume(quality, agent_action)
     report = write_match_report(match)
@@ -295,7 +318,7 @@ def job_intel_daily() -> None:
     summary = publish_pipeline_summary(history)
 
     crawl >> initial_match
-    initial_match >> quality >> agent_action >> match
+    initial_match >> telegram_preview >> quality >> agent_action >> match
     match >> [report, telegram]
     [report, telegram] >> history
     history >> summary
