@@ -3,12 +3,13 @@ from __future__ import annotations
 import tempfile
 from collections import Counter
 from dataclasses import asdict
+import os
 from pathlib import Path
 
 from sqlalchemy import select
 
 from job_intel.crawlers import available_crawlers, crawl_jobs
-from job_intel.db import session
+from job_intel.db import list_job_feedback, session
 from job_intel.db.history import record_match_run
 from job_intel.db.importer import upsert_jobs
 from job_intel.db.models import JobRecord, MatchRunRecord
@@ -30,12 +31,13 @@ def list_jobs(
     allowed_location_keywords: tuple[str, ...] = (),
 ) -> list[dict]:
     with session(db_path) as conn:
+        feedback_by_job = list_job_feedback_for_current_chat(conn)
         query = select(JobRecord)
         if min_posted_at:
             query = query.where(JobRecord.posted_at >= min_posted_at)
         query = query.order_by(JobRecord.posted_at.desc(), JobRecord.updated_at.desc())
         return [
-            serialize_job(row)
+            serialize_job(row, feedback_by_job=feedback_by_job)
             for row in conn.scalars(query).all()
             if is_taiwan_or_remote_job(
                 source=row.source,
@@ -137,6 +139,7 @@ def create_match_run(
         )
 
     with session(db_path) as conn:
+        feedback_by_job = list_job_feedback_for_current_chat(conn)
         match_run_id = record_match_run(
             conn,
             resume_text=resume_text,
@@ -146,7 +149,7 @@ def create_match_run(
         )
 
     return {
-        "matches": [serialize_match(item) for item in results],
+        "matches": [serialize_match(item, feedback_by_job=feedback_by_job) for item in results],
         "notified_count": notified_count,
         "match_run_id": match_run_id,
     }
@@ -162,12 +165,15 @@ def list_match_runs(db_path: Path, *, limit: int = 8) -> list[dict]:
         return [serialize_match_run(row) for row in rows]
 
 
-def serialize_match(item: MatchResult) -> dict:
-    return asdict(item)
+def serialize_match(item: MatchResult, *, feedback_by_job: dict[tuple[str, str], object] | None = None) -> dict:
+    data = asdict(item)
+    feedback = (feedback_by_job or {}).get((item.source, item.external_id))
+    data.update(serialize_feedback(feedback))
+    return data
 
 
-def serialize_job(row: JobRecord) -> dict:
-    return {
+def serialize_job(row: JobRecord, *, feedback_by_job: dict[tuple[str, str], object] | None = None) -> dict:
+    data = {
         "id": row.id,
         "source": row.source,
         "external_id": row.external_id,
@@ -180,6 +186,9 @@ def serialize_job(row: JobRecord) -> dict:
         "posted_at": row.posted_at,
         "updated_at": row.updated_at,
     }
+    feedback = (feedback_by_job or {}).get((row.source, row.external_id))
+    data.update(serialize_feedback(feedback))
+    return data
 
 
 def serialize_match_run(row: MatchRunRecord) -> dict:
@@ -192,4 +201,18 @@ def serialize_match_run(row: MatchRunRecord) -> dict:
         "qualified_matches": row.qualified_matches,
         "notified_count": row.notified_count,
         "created_at": row.created_at,
+    }
+
+
+def list_job_feedback_for_current_chat(conn) -> dict[tuple[str, str], object]:
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    if not chat_id:
+        return {}
+    return list_job_feedback(conn, chat_id=chat_id)
+
+
+def serialize_feedback(feedback: object | None) -> dict:
+    return {
+        "telegram_feedback": getattr(feedback, "feedback", None) if feedback else None,
+        "telegram_feedback_updated_at": getattr(feedback, "updated_at", None) if feedback else None,
     }

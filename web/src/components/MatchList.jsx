@@ -1,3 +1,9 @@
+const FEEDBACK_LABELS = {
+  interested: "Good fit",
+  ignored: "Not a fit",
+  applied: "Applied",
+};
+
 export function MatchList({ matches, selectedJob, setSelectedJob }) {
   if (!matches.length) {
     return (
@@ -20,7 +26,14 @@ export function MatchList({ matches, selectedJob, setSelectedJob }) {
           <span className="rank">{index + 1}</span>
           <span className="match-main">
             <strong>{item.title}</strong>
-            <em>{item.source || "unknown source"}</em>
+            <span className="match-meta">
+              <em>{item.source || "unknown source"}</em>
+              {item.telegram_feedback ? (
+                <span className={`feedback-badge ${item.telegram_feedback}`}>
+                  {FEEDBACK_LABELS[item.telegram_feedback] || item.telegram_feedback}
+                </span>
+              ) : null}
+            </span>
             <small>{`${item.company} - ${item.location || "Remote/unspecified"}`}</small>
           </span>
           <span className="score">

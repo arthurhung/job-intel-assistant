@@ -1,5 +1,11 @@
 import { SkillGroup } from "./SkillGroup.jsx";
 
+const FEEDBACK_LABELS = {
+  interested: "Good fit",
+  ignored: "Not a fit",
+  applied: "Applied",
+};
+
 export function JobDetail({ job }) {
   if (!job) {
     return (
@@ -16,8 +22,18 @@ export function JobDetail({ job }) {
         <h2>{job.title}</h2>
         <span>{job.score.toFixed(1)}</span>
       </div>
-      <div className="source-chip">{job.source || "unknown source"}</div>
+      <div className="detail-chips">
+        <div className="source-chip">{job.source || "unknown source"}</div>
+        {job.telegram_feedback ? (
+          <div className={`feedback-badge ${job.telegram_feedback}`}>
+            {FEEDBACK_LABELS[job.telegram_feedback] || job.telegram_feedback}
+          </div>
+        ) : null}
+      </div>
       <p className="company-line">{`${job.company} - ${job.location || "Remote/unspecified"}`}</p>
+      {job.telegram_feedback_updated_at ? (
+        <p className="feedback-note">Telegram feedback updated at {job.telegram_feedback_updated_at}</p>
+      ) : null}
       {job.llm_score !== null && job.llm_score !== undefined ? (
         <section className="llm-panel">
           <h3>LLM Fit</h3>

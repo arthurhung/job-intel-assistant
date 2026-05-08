@@ -388,8 +388,42 @@ input[type="range"] {
 }
 
 .match-main em {
-  margin-top: 3px;
   color: var(--accent-dark);
+}
+
+.match-meta,
+.detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.feedback-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.feedback-badge.interested {
+  background: var(--good-bg);
+  color: var(--good-ink);
+}
+
+.feedback-badge.ignored {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.feedback-badge.applied {
+  background: #e8edf9;
+  color: #27427f;
 }
 
 .score {
@@ -466,12 +500,21 @@ input[type="range"] {
 
 .source-chip {
   display: inline-flex;
-  margin-bottom: 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 5px 9px;
   color: var(--accent-dark);
   background: #f7fcfa;
+}
+
+.detail-chips {
+  margin-bottom: 8px;
+}
+
+.feedback-note {
+  margin-top: -4px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .skill-group {

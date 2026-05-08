@@ -15,6 +15,8 @@ class JobResponse(BaseModel):
     salary: str = ""
     posted_at: str = ""
     updated_at: str = ""
+    telegram_feedback: str | None = None
+    telegram_feedback_updated_at: str | None = None
 
 
 class MatchRequest(BaseModel):

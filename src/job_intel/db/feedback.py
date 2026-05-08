@@ -52,6 +52,13 @@ def get_job_feedback(conn: Session, *, source: str, external_id: str, chat_id: s
     )
 
 
+def list_job_feedback(conn: Session, *, chat_id: str) -> dict[tuple[str, str], JobFeedbackRecord]:
+    rows = conn.scalars(
+        select(JobFeedbackRecord).where(JobFeedbackRecord.chat_id == chat_id)
+    ).all()
+    return {(row.source, row.external_id): row for row in rows}
+
+
 def is_excluded_by_feedback(conn: Session, *, source: str, external_id: str, chat_id: str) -> bool:
     feedback = get_job_feedback(conn, source=source, external_id=external_id, chat_id=chat_id)
     return feedback in EXCLUDED_FEEDBACK
