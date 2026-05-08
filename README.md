@@ -18,6 +18,7 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 - Stores Telegram feedback so ignored or applied jobs are not pushed again
 - Optionally uses an LLM to judge resume-job fit and explain recommendations
 - Uses an Airflow tool loop to assess recommendation quality and optionally crawl more 104 jobs before notifying
+- Can use an optional LLM planner to propose the follow-up crawl strategy behind guardrails
 - Runs as a scheduled Airflow pipeline with Docker Compose
 
 ## Quick Start
@@ -158,6 +159,8 @@ python -m job_intel run-pipeline `
 ```
 
 The deterministic skill score remains the fallback. When LLM analysis is enabled, the top matches also receive an LLM fit score, recommendation note, and concerns.
+
+Set `JOB_INTEL_USE_LLM_PLANNER=true` to let the Airflow agent ask the LLM for a constrained follow-up crawl plan. The planner can only choose validated 104 keywords and a bounded notification threshold; if the LLM is unavailable, the rule-based plan is used.
 
 ## CSV Format
 

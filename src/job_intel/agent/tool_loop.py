@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Protocol
 
 from job_intel.core.job_filters import filter_taiwan_or_remote_jobs
 from job_intel.core.models import JobPosting, MatchResult
@@ -52,6 +53,14 @@ class AgentDecision:
         data["followup_keywords"] = list(self.followup_keywords)
         data["reasons"] = list(self.reasons)
         return data
+
+
+class AgentPlanLike(Protocol):
+    should_followup_crawl: bool
+    source: str
+    keywords: tuple[str, ...]
+    min_score: float
+    reason: str
 
 
 def assess_recommendation_quality(
@@ -136,6 +145,32 @@ def run_agent_followup_crawl(
         "keywords": list(decision.followup_keywords),
         "reasons": list(decision.reasons),
     }
+
+
+def run_agent_plan_followup_crawl(
+    *,
+    db_path: Path,
+    allowed_location_keywords: tuple[str, ...] | None,
+    plan: AgentPlanLike,
+    fallback_decision: AgentDecision,
+    limit: int,
+) -> dict:
+    decision = AgentDecision(
+        quality=fallback_decision.quality,
+        should_followup_crawl_104=plan.should_followup_crawl and plan.source == "104",
+        followup_keywords=plan.keywords,
+        effective_min_score=plan.min_score,
+        reasons=(plan.reason,),
+    )
+    result = run_agent_followup_crawl(
+        db_path=db_path,
+        allowed_location_keywords=allowed_location_keywords,
+        decision=decision,
+        limit=limit,
+    )
+    result["planner"] = getattr(plan, "planner", "unknown")
+    result["min_score"] = plan.min_score
+    return result
 
 
 def keywords_from_resume(resume_text: str, *, fallback: tuple[str, ...] = DEFAULT_FOLLOWUP_104_KEYWORDS) -> tuple[str, ...]:

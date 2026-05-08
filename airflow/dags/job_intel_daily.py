@@ -81,6 +81,7 @@ def _summary_from_results(
         "report_path": (report_result or {}).get("report_path"),
         "used_llm_analysis": match_result["used_llm_analysis"],
         "agent_action": match_result.get("agent_action", {}),
+        "agent_plan": match_result.get("agent_plan", {}),
         "agent_reasons": match_result.get("agent_reasons", []),
         "effective_min_score": match_result["min_score"],
     }
@@ -199,8 +200,32 @@ def job_intel_daily() -> None:
         return data
 
     @task
-    def run_agent_tool_loop(agent_decision: dict) -> dict:
-        from job_intel.agent import AgentDecision, RecommendationQuality, run_agent_followup_crawl
+    def plan_crawl_strategy(agent_decision: dict) -> dict:
+        from job_intel.agent import AgentDecision, RecommendationQuality, plan_with_llm
+        from job_intel.core.resume import load_resume_text
+
+        quality = RecommendationQuality(**agent_decision["quality"])
+        decision = AgentDecision(
+            quality=quality,
+            should_followup_crawl_104=agent_decision["should_followup_crawl_104"],
+            followup_keywords=tuple(agent_decision.get("followup_keywords", [])),
+            effective_min_score=agent_decision["effective_min_score"],
+            reasons=tuple(agent_decision.get("reasons", [])),
+        )
+        plan = plan_with_llm(
+            resume_text=load_resume_text(_resume_path()),
+            agent_decision=decision,
+            allowed_keywords=decision.followup_keywords,
+            enabled=_env_bool("JOB_INTEL_USE_LLM_PLANNER", False),
+        )
+        data = plan.to_dict()
+        print("Agent crawl strategy plan")
+        print(pprint.pformat(data, sort_dicts=False))
+        return data
+
+    @task
+    def run_agent_tool_loop(agent_decision: dict, agent_plan: dict) -> dict:
+        from job_intel.agent import AgentDecision, AgentPlan, RecommendationQuality, run_agent_plan_followup_crawl
         from job_intel.config import get_settings
 
         settings = get_settings()
@@ -212,10 +237,19 @@ def job_intel_daily() -> None:
             effective_min_score=agent_decision["effective_min_score"],
             reasons=tuple(agent_decision.get("reasons", [])),
         )
-        result = run_agent_followup_crawl(
+        plan = AgentPlan(
+            should_followup_crawl=agent_plan["should_followup_crawl"],
+            source=agent_plan["source"],
+            keywords=tuple(agent_plan.get("keywords", [])),
+            min_score=float(agent_plan["min_score"]),
+            reason=agent_plan.get("reason", ""),
+            planner=agent_plan.get("planner", "unknown"),
+        )
+        result = run_agent_plan_followup_crawl(
             db_path=_db_path(),
             allowed_location_keywords=settings.allowed_location_keywords or None,
-            decision=decision,
+            plan=plan,
+            fallback_decision=decision,
             limit=int(os.getenv("JOB_INTEL_AGENT_104_LIMIT", "25")),
         )
         print("Agent tool-loop action")
@@ -223,7 +257,7 @@ def job_intel_daily() -> None:
         return result
 
     @task
-    def final_match_resume(agent_decision: dict, agent_action: dict) -> dict:
+    def final_match_resume(agent_plan: dict, agent_action: dict) -> dict:
         from job_intel.config import get_settings
         from job_intel.core.matcher import match_jobs
         from job_intel.core.resume import load_resume_text
@@ -246,7 +280,7 @@ def job_intel_daily() -> None:
 
         artifact_path = _match_artifact_path("final_matches")
         _write_matches(artifact_path, matches)
-        min_score = float(agent_decision["effective_min_score"])
+        min_score = float(agent_plan["min_score"])
         return {
             "artifact_path": str(artifact_path),
             "total_matches": len(matches),
@@ -258,7 +292,8 @@ def job_intel_daily() -> None:
             "min_score": min_score,
             "used_llm_analysis": _env_bool("JOB_INTEL_USE_LLM_ANALYSIS"),
             "agent_action": agent_action,
-            "agent_reasons": agent_decision.get("reasons", []),
+            "agent_plan": agent_plan,
+            "agent_reasons": [agent_plan.get("reason", "")],
         }
 
     @task
@@ -336,15 +371,16 @@ def job_intel_daily() -> None:
     initial_match = initial_match_resume(crawl)
     telegram_preview = preview_telegram_candidates(initial_match)
     quality = assess_recommendation_quality(initial_match, telegram_preview)
-    agent_action = run_agent_tool_loop(quality)
-    match = final_match_resume(quality, agent_action)
+    plan = plan_crawl_strategy(quality)
+    agent_action = run_agent_tool_loop(quality, plan)
+    match = final_match_resume(plan, agent_action)
     report = write_match_report(match)
     telegram = send_telegram_digest(crawl, match, report)
     history = record_match_history(crawl, match, report, telegram)
     summary = publish_pipeline_summary(history)
 
     crawl >> initial_match
-    initial_match >> telegram_preview >> quality >> agent_action >> match
+    initial_match >> telegram_preview >> quality >> plan >> agent_action >> match
     match >> report >> telegram
     [report, telegram] >> history
     history >> summary

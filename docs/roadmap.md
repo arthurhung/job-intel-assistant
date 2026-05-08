@@ -78,6 +78,7 @@ Current goals:
 - Assess recommendation quality before notification.
 - Optionally run a follow-up 104 crawl with focused keywords.
 - Raise the final Telegram threshold when recommendation quality is low.
+- Optionally ask an LLM planner for a constrained crawl strategy before executing the tool loop.
 
 Next improvements:
 
