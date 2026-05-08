@@ -64,6 +64,28 @@ def _read_matches(path: str | Path) -> list[Any]:
     return [MatchResult(**item) for item in payload]
 
 
+def _summary_from_results(
+    *,
+    crawl_result: dict,
+    match_result: dict,
+    report_result: dict | None = None,
+    telegram_result: dict | None = None,
+    match_run_id: int | None = None,
+) -> dict:
+    return {
+        **crawl_result,
+        "total_matches": match_result["total_matches"],
+        "qualified_matches": match_result["qualified_matches"],
+        "notified_count": (telegram_result or {}).get("notified_count"),
+        "match_run_id": match_run_id,
+        "report_path": (report_result or {}).get("report_path"),
+        "used_llm_analysis": match_result["used_llm_analysis"],
+        "agent_action": match_result.get("agent_action", {}),
+        "agent_reasons": match_result.get("agent_reasons", []),
+        "effective_min_score": match_result["min_score"],
+    }
+
+
 @dag(
     dag_id="job_intel_daily",
     description="Crawl jobs, match a resume, write a report, and optionally send Telegram notifications.",
@@ -249,8 +271,8 @@ def job_intel_daily() -> None:
         return {"report_path": str(report_path)}
 
     @task
-    def send_telegram_digest(match_result: dict) -> dict:
-        from job_intel.notifications.telegram import send_match_digest
+    def send_telegram_digest(crawl_result: dict, match_result: dict, report_result: dict) -> dict:
+        from job_intel.notifications.telegram import send_match_digest, send_no_new_jobs_summary
 
         if not _env_bool("JOB_INTEL_NOTIFY_TELEGRAM"):
             return {"notified_count": None, "enabled": False}
@@ -262,6 +284,15 @@ def job_intel_daily() -> None:
             min_score=float(os.getenv("JOB_INTEL_TELEGRAM_MIN_SCORE", "70")),
             limit=int(os.getenv("JOB_INTEL_TELEGRAM_LIMIT", "5")),
         )
+        if notified_count == 0 and _env_bool("JOB_INTEL_NOTIFY_NO_NEW_JOBS", True):
+            send_no_new_jobs_summary(
+                summary=_summary_from_results(
+                    crawl_result=crawl_result,
+                    match_result=match_result,
+                    report_result=report_result,
+                    telegram_result={"notified_count": notified_count},
+                )
+            )
         return {"notified_count": notified_count, "enabled": True}
 
     @task
@@ -287,18 +318,13 @@ def job_intel_daily() -> None:
                 notified_count=notified_count,
             )
 
-        return {
-            **crawl_result,
-            "total_matches": match_result["total_matches"],
-            "qualified_matches": match_result["qualified_matches"],
-            "notified_count": notified_count,
-            "match_run_id": match_run_id,
-            "report_path": report_result["report_path"],
-            "used_llm_analysis": match_result["used_llm_analysis"],
-            "agent_action": match_result.get("agent_action", {}),
-            "agent_reasons": match_result.get("agent_reasons", []),
-            "effective_min_score": match_result["min_score"],
-        }
+        return _summary_from_results(
+            crawl_result=crawl_result,
+            match_result=match_result,
+            report_result=report_result,
+            telegram_result=telegram_result,
+            match_run_id=match_run_id,
+        )
 
     @task
     def publish_pipeline_summary(summary: dict) -> dict:
@@ -313,13 +339,13 @@ def job_intel_daily() -> None:
     agent_action = run_agent_tool_loop(quality)
     match = final_match_resume(quality, agent_action)
     report = write_match_report(match)
-    telegram = send_telegram_digest(match)
+    telegram = send_telegram_digest(crawl, match, report)
     history = record_match_history(crawl, match, report, telegram)
     summary = publish_pipeline_summary(history)
 
     crawl >> initial_match
     initial_match >> telegram_preview >> quality >> agent_action >> match
-    match >> [report, telegram]
+    match >> report >> telegram
     [report, telegram] >> history
     history >> summary
 

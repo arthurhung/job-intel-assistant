@@ -94,6 +94,23 @@ def send_test_message(
     _send_message(token=token, chat_id=chat_id, text=text)
 
 
+def send_no_new_jobs_summary(
+    *,
+    summary: dict,
+    token: str | None = None,
+    chat_id: str | None = None,
+) -> None:
+    load_env_files()
+    token = token or os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        raise TelegramConfigError(
+            "Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID, or pass --telegram-token and --telegram-chat-id."
+        )
+
+    _send_message(token=token, chat_id=chat_id, text=_format_no_new_jobs_summary(summary))
+
+
 def set_webhook(public_url: str, *, token: str | None = None) -> dict:
     token = _load_token(token)
     webhook_url = _webhook_url(public_url)
@@ -176,6 +193,41 @@ def _format_job_message(item: MatchResult, *, index: int) -> str:
         item.url or "",
     ]
     return _truncate_message("\n".join(lines).strip())
+
+
+def _format_no_new_jobs_summary(summary: dict) -> str:
+    agent_action = summary.get("agent_action") or {}
+    agent_reasons = summary.get("agent_reasons") or agent_action.get("reasons") or []
+    source_stats = summary.get("source_stats") or []
+    source_line = ", ".join(
+        f"{item.get('source')}: {item.get('kept_count', 0)}/{item.get('crawled_count', 0)}"
+        for item in source_stats[:5]
+        if item.get("source")
+    )
+    if len(source_stats) > 5:
+        source_line += f", +{len(source_stats) - 5} more"
+
+    lines = [
+        "Job Intel daily check: no new Telegram matches",
+        f"Crawled: {summary.get('crawled_count', 0)}",
+        f"Imported: {summary.get('imported_count', 0)}",
+        f"Qualified matches: {summary.get('qualified_matches', 0)}",
+        f"Notification threshold: {float(summary.get('effective_min_score', summary.get('min_score', 0))):.1f}",
+        f"Agent action: {_agent_action_label(agent_action)}",
+        f"Why: {'; '.join(agent_reasons) if agent_reasons else '-'}",
+        f"Sources: {source_line}" if source_line else "",
+    ]
+    return _truncate_message("\n".join(line for line in lines if line))
+
+
+def _agent_action_label(agent_action: dict) -> str:
+    if not agent_action:
+        return "-"
+    if agent_action.get("enabled"):
+        keywords = ", ".join(agent_action.get("keywords") or [])
+        imported = agent_action.get("imported_count", 0)
+        return f"follow-up 104 crawl imported {imported} job(s)" + (f" ({keywords})" if keywords else "")
+    return "no follow-up crawl"
 
 
 def _feedback_keyboard(item: MatchResult, *, selected_action: str | None = None) -> dict | None:
