@@ -42,12 +42,13 @@ def _report_path() -> Path:
     return Path(os.getenv("JOB_INTEL_REPORT_PATH", "reports/match_report.md"))
 
 
-def _match_artifact_path() -> Path:
+def _match_artifact_path(label: str = "matches") -> Path:
     context = get_current_context()
     run_id = re.sub(r"[^a-zA-Z0-9_.-]+", "_", context["run_id"])
     directory = Path(os.getenv("JOB_INTEL_AIRFLOW_ARTIFACT_DIR", "data/airflow"))
     directory.mkdir(parents=True, exist_ok=True)
-    return directory / f"matches_{run_id}.json"
+    safe_label = re.sub(r"[^a-zA-Z0-9_.-]+", "_", label)
+    return directory / f"{safe_label}_{run_id}.json"
 
 
 def _write_matches(path: Path, matches: list[Any]) -> None:
@@ -94,7 +95,90 @@ def job_intel_daily() -> None:
         }
 
     @task
-    def match_resume(crawl_result: dict) -> dict:
+    def initial_match_resume(crawl_result: dict) -> dict:
+        from job_intel.config import get_settings
+        from job_intel.core.matcher import match_jobs
+        from job_intel.core.resume import load_resume_text
+        from job_intel.db import session
+        from job_intel.llm import analyze_matches_with_llm
+
+        settings = get_settings()
+        resume_text = load_resume_text(_resume_path())
+        with session(_db_path()) as conn:
+            matches = match_jobs(
+                conn,
+                resume_text,
+                allowed_location_keywords=settings.allowed_location_keywords or None,
+            )
+        matches = analyze_matches_with_llm(
+            matches,
+            resume_text=resume_text,
+            enabled=False,
+        )
+
+        artifact_path = _match_artifact_path("initial_matches")
+        _write_matches(artifact_path, matches)
+        min_score = float(os.getenv("JOB_INTEL_TELEGRAM_MIN_SCORE", "70"))
+        return {
+            "artifact_path": str(artifact_path),
+            "total_matches": len(matches),
+            "qualified_matches": sum(1 for item in matches if item.score >= min_score),
+            "min_score": min_score,
+            "used_llm_analysis": False,
+            "upstream_source": crawl_result["source"],
+        }
+
+    @task
+    def assess_recommendation_quality(match_result: dict, telegram_result: dict) -> dict:
+        from job_intel.agent import assess_recommendation_quality as assess_quality
+        from job_intel.agent import keywords_from_resume
+        from job_intel.core.resume import load_resume_text
+
+        matches = _read_matches(match_result["artifact_path"])
+        resume_text = load_resume_text(_resume_path())
+        decision = assess_quality(
+            matches,
+            min_score=match_result["min_score"],
+            notified_count=telegram_result["notified_count"],
+            followup_keywords=keywords_from_resume(resume_text),
+        )
+        enabled = _env_bool("JOB_INTEL_AGENT_TOOL_LOOP", True)
+        data = decision.to_dict()
+        if not enabled:
+            data["should_followup_crawl_104"] = False
+            data["followup_keywords"] = []
+            data["effective_min_score"] = match_result["min_score"]
+            data["reasons"] = ["Agent tool loop is disabled."]
+        print("Agent recommendation quality assessment")
+        print(pprint.pformat(data, sort_dicts=False))
+        return data
+
+    @task
+    def run_agent_tool_loop(agent_decision: dict) -> dict:
+        from job_intel.agent import AgentDecision, RecommendationQuality, run_agent_followup_crawl
+        from job_intel.config import get_settings
+
+        settings = get_settings()
+        quality = RecommendationQuality(**agent_decision["quality"])
+        decision = AgentDecision(
+            quality=quality,
+            should_followup_crawl_104=agent_decision["should_followup_crawl_104"],
+            followup_keywords=tuple(agent_decision.get("followup_keywords", [])),
+            effective_min_score=agent_decision["effective_min_score"],
+            reasons=tuple(agent_decision.get("reasons", [])),
+        )
+        result = run_agent_followup_crawl(
+            db_path=_db_path(),
+            allowed_location_keywords=settings.allowed_location_keywords or None,
+            decision=decision,
+            limit=int(os.getenv("JOB_INTEL_AGENT_104_LIMIT", "25")),
+        )
+        print("Agent tool-loop action")
+        print(pprint.pformat(result, sort_dicts=False))
+        return result
+
+    @task
+    def final_match_resume(agent_decision: dict, agent_action: dict) -> dict:
         from job_intel.config import get_settings
         from job_intel.core.matcher import match_jobs
         from job_intel.core.resume import load_resume_text
@@ -115,16 +199,21 @@ def job_intel_daily() -> None:
             enabled=_env_bool("JOB_INTEL_USE_LLM_ANALYSIS"),
         )
 
-        artifact_path = _match_artifact_path()
+        artifact_path = _match_artifact_path("final_matches")
         _write_matches(artifact_path, matches)
-        min_score = float(os.getenv("JOB_INTEL_TELEGRAM_MIN_SCORE", "70"))
+        min_score = float(agent_decision["effective_min_score"])
         return {
             "artifact_path": str(artifact_path),
             "total_matches": len(matches),
-            "qualified_matches": sum(1 for item in matches if item.score >= min_score),
+            "qualified_matches": sum(
+                1
+                for item in matches
+                if (item.llm_score if item.llm_score is not None else item.score) >= min_score
+            ),
             "min_score": min_score,
             "used_llm_analysis": _env_bool("JOB_INTEL_USE_LLM_ANALYSIS"),
-            "upstream_source": crawl_result["source"],
+            "agent_action": agent_action,
+            "agent_reasons": agent_decision.get("reasons", []),
         }
 
     @task
@@ -183,6 +272,9 @@ def job_intel_daily() -> None:
             "match_run_id": match_run_id,
             "report_path": report_result["report_path"],
             "used_llm_analysis": match_result["used_llm_analysis"],
+            "agent_action": match_result.get("agent_action", {}),
+            "agent_reasons": match_result.get("agent_reasons", []),
+            "effective_min_score": match_result["min_score"],
         }
 
     @task
@@ -192,13 +284,18 @@ def job_intel_daily() -> None:
         return summary
 
     crawl = crawl_and_import_jobs()
-    match = match_resume(crawl)
+    initial_match = initial_match_resume(crawl)
+    initial_telegram = {"notified_count": None, "enabled": _env_bool("JOB_INTEL_NOTIFY_TELEGRAM")}
+    quality = assess_recommendation_quality(initial_match, initial_telegram)
+    agent_action = run_agent_tool_loop(quality)
+    match = final_match_resume(quality, agent_action)
     report = write_match_report(match)
     telegram = send_telegram_digest(match)
     history = record_match_history(crawl, match, report, telegram)
     summary = publish_pipeline_summary(history)
 
-    crawl >> match
+    crawl >> initial_match
+    initial_match >> quality >> agent_action >> match
     match >> [report, telegram]
     [report, telegram] >> history
     history >> summary

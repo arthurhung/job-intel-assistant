@@ -17,6 +17,7 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 - Includes source, location, score, skills, recommendation reason, and job URL in Telegram messages
 - Stores Telegram feedback so ignored or applied jobs are not pushed again
 - Optionally uses an LLM to judge resume-job fit and explain recommendations
+- Uses an Airflow tool loop to assess recommendation quality and optionally crawl more 104 jobs before notifying
 - Runs as a scheduled Airflow pipeline with Docker Compose
 
 ## Quick Start

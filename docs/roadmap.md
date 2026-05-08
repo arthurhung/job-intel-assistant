@@ -75,10 +75,12 @@ Current goals:
 - Load Airflow settings from `airflow/.env`.
 - Use retries for crawler and notification tasks.
 - Keep reports and SQLite data mounted outside the container.
+- Assess recommendation quality before notification.
+- Optionally run a follow-up 104 crawl with focused keywords.
+- Raise the final Telegram threshold when recommendation quality is low.
 
 Next improvements:
 
-- Add clearer task boundaries in the DAG.
 - Add source health and notification history tasks.
 - Prepare the flow for PostgreSQL later.
 
