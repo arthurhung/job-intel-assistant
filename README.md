@@ -14,7 +14,8 @@ The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow 
 - Writes a Markdown match report
 - Sends top matches to Telegram
 - Skips Telegram jobs that were already sent to the same chat
-- Includes source, location, score, skills, recommendation reason, and job URL in Telegram digests
+- Includes source, location, score, skills, recommendation reason, and job URL in Telegram messages
+- Stores Telegram feedback so ignored or applied jobs are not pushed again
 - Optionally uses an LLM to judge resume-job fit and explain recommendations
 - Runs as a scheduled Airflow pipeline with Docker Compose
 
@@ -128,7 +129,7 @@ See [docs/telegram.md](docs/telegram.md) for setup details.
 
 The app reads `.env` and `.env.local` automatically. Existing environment variables take priority. Airflow reads `airflow/.env` through Docker Compose.
 
-Telegram notifications are deduplicated by `source + external_id + chat_id`, so the same job is not pushed again after a successful send.
+Telegram notifications are deduplicated by `source + external_id + chat_id`, so the same job is not pushed again after a successful send. Telegram feedback buttons can also mark a job as `Not a fit` or `Applied`, and those jobs are skipped in later notifications for the same chat.
 
 ## LLM Fit Analysis
 

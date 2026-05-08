@@ -25,7 +25,7 @@ from job_intel.application.services import (
     run_crawler,
 )
 from job_intel.llm import LLMAnalysisError, LLMConfigError
-from job_intel.notifications.telegram import TelegramConfigError
+from job_intel.notifications.telegram import TelegramConfigError, handle_telegram_update
 
 
 settings = get_settings()
@@ -97,6 +97,14 @@ def create_matches(request: MatchRequest) -> dict:
 @app.get("/api/match-runs", response_model=list[MatchRunResponse])
 def list_match_runs(limit: Annotated[int, Query(ge=1, le=50)] = 8) -> list[dict]:
     return list_match_runs_service(settings.db_path, limit=limit)
+
+
+@app.post("/api/telegram/webhook")
+async def telegram_webhook(request: Request) -> dict:
+    try:
+        return handle_telegram_update(await request.json(), db_path=settings.db_path)
+    except TelegramConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 assets_dir = settings.web_dir / "assets"

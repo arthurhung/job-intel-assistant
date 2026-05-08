@@ -50,3 +50,16 @@ class TelegramSentJobRecord(Base):
     first_sent_at: Mapped[str] = mapped_column(Text, server_default=text("CURRENT_TIMESTAMP"))
     last_sent_at: Mapped[str] = mapped_column(Text, server_default=text("CURRENT_TIMESTAMP"))
     send_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+
+
+class JobFeedbackRecord(Base):
+    __tablename__ = "job_feedback"
+    __table_args__ = (UniqueConstraint("source", "external_id", "chat_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    source: Mapped[str] = mapped_column(Text, nullable=False)
+    external_id: Mapped[str] = mapped_column(Text, nullable=False)
+    chat_id: Mapped[str] = mapped_column(String, nullable=False)
+    feedback: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[str] = mapped_column(Text, server_default=text("CURRENT_TIMESTAMP"))
+    updated_at: Mapped[str] = mapped_column(Text, server_default=text("CURRENT_TIMESTAMP"))

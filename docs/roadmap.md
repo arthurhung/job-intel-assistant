@@ -46,10 +46,11 @@ Status: in progress.
 - Support `python -m job_intel test-telegram`.
 - Send only jobs above the configured score threshold.
 - Skip jobs that were already sent to the same Telegram chat.
+- Record Telegram feedback from inline buttons.
+- Skip jobs marked as `Not a fit` or `Applied`.
 
 Next improvements:
 
-- Show why a job was notified.
 - Add notification history to the dashboard.
 - Support a daily digest summary when there are no new jobs, if desired.
 

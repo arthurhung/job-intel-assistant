@@ -54,3 +54,25 @@ Telegram digests are deduplicated by `source + external_id + chat_id`. Once a jo
 Each digest item includes the job title, company, source, location, score, recommendation reason, matched skills, missing skills, compact summary, and direct job URL.
 
 When LLM analysis is enabled, Telegram digests also include the LLM fit score, recommendation note, and concerns.
+
+## 5. Enable Feedback Buttons
+
+Telegram job messages include feedback buttons:
+
+- `Good fit`: record that the job is interesting.
+- `Not a fit`: stop sending that job again.
+- `Applied`: stop sending that job again after you apply.
+
+Button clicks are handled by the FastAPI webhook endpoint:
+
+```text
+/api/telegram/webhook
+```
+
+Telegram must reach that endpoint through a public HTTPS URL. For local testing, expose your API server with a tunnel such as ngrok or Cloudflare Tunnel, then register the webhook:
+
+```text
+https://api.telegram.org/bot<TOKEN>/setWebhook?url=<PUBLIC_HTTPS_URL>/api/telegram/webhook
+```
+
+After the webhook is registered, clicking `Not a fit` or `Applied` stores feedback in SQLite and future Telegram runs skip that job for the same chat.

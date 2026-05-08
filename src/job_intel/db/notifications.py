@@ -5,6 +5,7 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session
 
 from job_intel.core.models import MatchResult
+from job_intel.db.feedback import is_excluded_by_feedback
 from job_intel.db.models import TelegramSentJobRecord
 
 
@@ -20,6 +21,8 @@ def filter_unsent_telegram_matches(
     unsent: list[MatchResult] = []
     for item in selected:
         if not item.source or not item.external_id:
+            continue
+        if is_excluded_by_feedback(conn, source=item.source, external_id=item.external_id, chat_id=chat_id):
             continue
         exists = conn.scalar(
             select(TelegramSentJobRecord.id)
