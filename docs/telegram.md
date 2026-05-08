@@ -69,10 +69,23 @@ Button clicks are handled by the FastAPI webhook endpoint:
 /api/telegram/webhook
 ```
 
-Telegram must reach that endpoint through a public HTTPS URL. For local testing, expose your API server with a tunnel such as ngrok or Cloudflare Tunnel, then register the webhook:
+Telegram must reach that endpoint through a public HTTPS URL. For a free fixed URL without buying a domain, reserve one free static domain in ngrok, then run:
 
-```text
-https://api.telegram.org/bot<TOKEN>/setWebhook?url=<PUBLIC_HTTPS_URL>/api/telegram/webhook
+```powershell
+ngrok config add-authtoken <NGROK_AUTHTOKEN>
+ngrok http --domain=<YOUR_STATIC_DOMAIN>.ngrok-free.app 8000
+```
+
+With the FastAPI server running on port 8000, register the webhook:
+
+```powershell
+python -m job_intel set-telegram-webhook --public-url https://<YOUR_STATIC_DOMAIN>.ngrok-free.app
+```
+
+Check the registered webhook:
+
+```powershell
+python -m job_intel telegram-webhook-info
 ```
 
 After the webhook is registered, clicking `Not a fit` or `Applied` stores feedback in SQLite and future Telegram runs skip that job for the same chat.

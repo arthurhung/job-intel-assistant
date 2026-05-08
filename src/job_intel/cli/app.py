@@ -12,7 +12,14 @@ from job_intel.pipeline import run_pipeline
 from job_intel.pipeline.report import write_markdown_report
 from job_intel.core.resume import load_resume_text
 from job_intel.llm import LLMAnalysisError, LLMConfigError, analyze_matches_with_llm
-from job_intel.notifications.telegram import TelegramConfigError, send_match_digest, send_test_message
+from job_intel.notifications.telegram import (
+    TelegramConfigError,
+    delete_webhook,
+    get_webhook_info,
+    send_match_digest,
+    send_test_message,
+    set_webhook,
+)
 
 
 DEFAULT_SETTINGS = get_settings()
@@ -66,6 +73,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Test message text",
     )
     telegram_parser.set_defaults(handler=handle_test_telegram)
+
+    set_webhook_parser = subparsers.add_parser("set-telegram-webhook", help="Register the Telegram feedback webhook")
+    set_webhook_parser.add_argument("--public-url", required=True, help="Public HTTPS URL that forwards to FastAPI")
+    set_webhook_parser.add_argument("--telegram-token", help="Telegram bot token. Defaults to TELEGRAM_BOT_TOKEN")
+    set_webhook_parser.set_defaults(handler=handle_set_telegram_webhook)
+
+    webhook_info_parser = subparsers.add_parser("telegram-webhook-info", help="Show Telegram webhook status")
+    webhook_info_parser.add_argument("--telegram-token", help="Telegram bot token. Defaults to TELEGRAM_BOT_TOKEN")
+    webhook_info_parser.set_defaults(handler=handle_telegram_webhook_info)
+
+    delete_webhook_parser = subparsers.add_parser("delete-telegram-webhook", help="Remove the Telegram webhook")
+    delete_webhook_parser.add_argument("--telegram-token", help="Telegram bot token. Defaults to TELEGRAM_BOT_TOKEN")
+    delete_webhook_parser.set_defaults(handler=handle_delete_telegram_webhook)
 
     return parser
 
@@ -164,4 +184,28 @@ def handle_test_telegram(args: argparse.Namespace) -> int:
         text=args.message,
     )
     print("Sent Telegram test message")
+    return 0
+
+
+def handle_set_telegram_webhook(args: argparse.Namespace) -> int:
+    result = set_webhook(args.public_url, token=args.telegram_token)
+    description = result.get("description", "Webhook was set")
+    print(description)
+    print(f"Webhook URL: {args.public_url.rstrip('/')}/api/telegram/webhook")
+    return 0
+
+
+def handle_telegram_webhook_info(args: argparse.Namespace) -> int:
+    result = get_webhook_info(token=args.telegram_token)
+    info = result.get("result", {})
+    print(f"url={info.get('url', '')}")
+    print(f"pending_update_count={info.get('pending_update_count', 0)}")
+    if info.get("last_error_message"):
+        print(f"last_error_message={info['last_error_message']}")
+    return 0
+
+
+def handle_delete_telegram_webhook(args: argparse.Namespace) -> int:
+    result = delete_webhook(token=args.telegram_token)
+    print(result.get("description", "Webhook was deleted"))
     return 0

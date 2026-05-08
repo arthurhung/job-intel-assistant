@@ -131,6 +131,13 @@ The app reads `.env` and `.env.local` automatically. Existing environment variab
 
 Telegram notifications are deduplicated by `source + external_id + chat_id`, so the same job is not pushed again after a successful send. Telegram feedback buttons can also mark a job as `Not a fit` or `Applied`, and those jobs are skipped in later notifications for the same chat.
 
+For Telegram feedback buttons to work, expose the FastAPI server through a public HTTPS URL and register the webhook:
+
+```powershell
+python -m job_intel set-telegram-webhook --public-url https://your-static-domain.ngrok-free.app
+python -m job_intel telegram-webhook-info
+```
+
 ## LLM Fit Analysis
 
 Set an OpenAI API key to enable optional LLM-based fit analysis:

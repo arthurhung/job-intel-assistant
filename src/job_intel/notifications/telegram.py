@@ -94,11 +94,24 @@ def send_test_message(
     _send_message(token=token, chat_id=chat_id, text=text)
 
 
+def set_webhook(public_url: str, *, token: str | None = None) -> dict:
+    token = _load_token(token)
+    webhook_url = _webhook_url(public_url)
+    return _telegram_request(token=token, method="setWebhook", data={"url": webhook_url})
+
+
+def get_webhook_info(*, token: str | None = None) -> dict:
+    token = _load_token(token)
+    return _telegram_request(token=token, method="getWebhookInfo", data={})
+
+
+def delete_webhook(*, token: str | None = None) -> dict:
+    token = _load_token(token)
+    return _telegram_request(token=token, method="deleteWebhook", data={})
+
+
 def handle_telegram_update(update: dict, *, db_path: Path, token: str | None = None) -> dict:
-    load_env_files()
-    token = token or os.getenv("TELEGRAM_BOT_TOKEN")
-    if not token:
-        raise TelegramConfigError("Set TELEGRAM_BOT_TOKEN before handling Telegram callbacks.")
+    token = _load_token(token)
 
     callback_query = update.get("callback_query") or {}
     callback_id = str(callback_query.get("id") or "")
@@ -179,6 +192,21 @@ def _parse_feedback_callback(data: str) -> tuple[str, str, str] | None:
     return action, source, external_id
 
 
+def _load_token(token: str | None = None) -> str:
+    load_env_files()
+    token = token or os.getenv("TELEGRAM_BOT_TOKEN")
+    if not token:
+        raise TelegramConfigError("Set TELEGRAM_BOT_TOKEN, or pass --telegram-token.")
+    return token
+
+
+def _webhook_url(public_url: str) -> str:
+    base_url = public_url.rstrip("/")
+    if not base_url.startswith("https://"):
+        raise TelegramConfigError("Telegram webhook URL must use https://")
+    return f"{base_url}/api/telegram/webhook"
+
+
 def _recommendation_reason(item: MatchResult) -> str:
     if item.llm_recommendation:
         return item.llm_recommendation
@@ -233,16 +261,23 @@ def _send_message(*, token: str, chat_id: str, text: str, reply_markup: dict | N
 
 
 def _answer_callback_query(*, token: str, callback_query_id: str, text: str) -> None:
-    url = f"{TELEGRAM_API_BASE}/bot{token}/answerCallbackQuery"
-    payload = urllib.parse.urlencode(
-        {
+    _telegram_request(
+        token=token,
+        method="answerCallbackQuery",
+        data={
             "callback_query_id": callback_query_id,
             "text": text,
-        }
-    ).encode("utf-8")
+        },
+    )
+
+
+def _telegram_request(*, token: str, method: str, data: dict[str, str]) -> dict:
+    url = f"{TELEGRAM_API_BASE}/bot{token}/{method}"
+    payload = urllib.parse.urlencode(data).encode("utf-8")
     request = urllib.request.Request(url, data=payload, method="POST")
     with urllib.request.urlopen(request, timeout=15) as response:
-        data = json.loads(response.read().decode("utf-8"))
-        if not data.get("ok"):
-            description = data.get("description", "Unknown Telegram API error")
+        body = json.loads(response.read().decode("utf-8"))
+        if not body.get("ok"):
+            description = body.get("description", "Unknown Telegram API error")
             raise RuntimeError(description)
+        return body
