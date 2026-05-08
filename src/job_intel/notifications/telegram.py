@@ -117,6 +117,7 @@ def handle_telegram_update(update: dict, *, db_path: Path, token: str | None = N
     callback_id = str(callback_query.get("id") or "")
     data = str(callback_query.get("data") or "")
     message = callback_query.get("message") or {}
+    message_id = message.get("message_id")
     chat = message.get("chat") or {}
     chat_id = str(chat.get("id") or "")
 
@@ -137,6 +138,15 @@ def handle_telegram_update(update: dict, *, db_path: Path, token: str | None = N
         )
 
     label = CALLBACK_ACTIONS[action]
+    if message_id:
+        _edit_feedback_keyboard(
+            token=token,
+            chat_id=chat_id,
+            message_id=str(message_id),
+            source=source,
+            external_id=external_id,
+            selected_action=action,
+        )
     if callback_id:
         _answer_callback_query(token=token, callback_query_id=callback_id, text=f"Recorded: {label}")
     return {
@@ -168,13 +178,22 @@ def _format_job_message(item: MatchResult, *, index: int) -> str:
     return _truncate_message("\n".join(lines).strip())
 
 
-def _feedback_keyboard(item: MatchResult) -> dict | None:
+def _feedback_keyboard(item: MatchResult, *, selected_action: str | None = None) -> dict | None:
+    return _feedback_keyboard_for_job(
+        source=item.source,
+        external_id=item.external_id,
+        selected_action=selected_action,
+    )
+
+
+def _feedback_keyboard_for_job(*, source: str, external_id: str, selected_action: str | None = None) -> dict | None:
     callback_rows = []
     for action, label in CALLBACK_ACTIONS.items():
-        callback_data = _feedback_callback_data(action=action, source=item.source, external_id=item.external_id)
+        button_label = f"[x] {label}" if action == selected_action else label
+        callback_data = _feedback_callback_data(action=action, source=source, external_id=external_id)
         if len(callback_data.encode("utf-8")) > 64:
             return None
-        callback_rows.append({"text": label, "callback_data": callback_data})
+        callback_rows.append({"text": button_label, "callback_data": callback_data})
     return {"inline_keyboard": [callback_rows]}
 
 
@@ -267,6 +286,33 @@ def _answer_callback_query(*, token: str, callback_query_id: str, text: str) -> 
         data={
             "callback_query_id": callback_query_id,
             "text": text,
+        },
+    )
+
+
+def _edit_feedback_keyboard(
+    *,
+    token: str,
+    chat_id: str,
+    message_id: str,
+    source: str,
+    external_id: str,
+    selected_action: str,
+) -> None:
+    reply_markup = _feedback_keyboard_for_job(
+        source=source,
+        external_id=external_id,
+        selected_action=selected_action,
+    )
+    if not reply_markup:
+        return
+    _telegram_request(
+        token=token,
+        method="editMessageReplyMarkup",
+        data={
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "reply_markup": json.dumps(reply_markup, ensure_ascii=False),
         },
     )
 
