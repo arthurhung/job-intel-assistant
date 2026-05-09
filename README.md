@@ -1,5 +1,9 @@
 # Job Intel Assistant
 
+[![CI](https://github.com/arthurhung/job-intel-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/arthurhung/job-intel-assistant/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Tests](https://img.shields.io/badge/tests-pytest%20%2B%20core%20coverage-brightgreen)
+
 A scheduled job intelligence assistant that crawls Taiwan and open-remote job sources, ranks roles against a resume, and sends high-signal opportunities to Telegram.
 
 The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow daily, filters out low-signal roles, and pushes only relevant opportunities to Telegram.

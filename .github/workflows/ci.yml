@@ -1,5 +1,8 @@
 name: CI
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: ["main"]
@@ -26,4 +29,9 @@ jobs:
         run: python -m ruff check src tests
 
       - name: Test
-        run: python -m pytest
+        run: >
+          python -m pytest
+          --cov=job_intel.core
+          --cov=job_intel.db
+          --cov=job_intel.crawlers.utils
+          --cov-report=term-missing
