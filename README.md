@@ -140,6 +140,8 @@ python -m job_intel set-telegram-webhook --public-url https://your-static-domain
 python -m job_intel telegram-webhook-info
 ```
 
+See [docs/ngrok.md](docs/ngrok.md) for the local ngrok setup.
+
 ## LLM Fit Analysis
 
 Set an OpenAI API key to enable optional LLM-based fit analysis:
