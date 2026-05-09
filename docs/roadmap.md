@@ -9,6 +9,14 @@ This project is a portfolio-ready job intelligence assistant. The goal is to cra
 - Avoid duplicate Telegram notifications.
 - Keep the project structure clear enough to discuss in interviews.
 
+## MVP Status
+
+Status: portfolio MVP complete.
+
+The project currently runs end-to-end locally: crawlers import jobs, matching ranks them against a resume, Airflow orchestrates the scheduled pipeline, Telegram receives deduplicated digests, Telegram feedback is stored, and the dashboard shows jobs, matches, run history, and feedback state.
+
+Remaining roadmap items are production hardening and polish, not blockers for demonstrating the core workflow.
+
 ## Phase 1 - CLI MVP
 
 Status: done.
@@ -22,7 +30,7 @@ Status: done.
 
 ## Phase 2 - Crawlers
 
-Status: in progress.
+Status: MVP done; hardening in progress.
 
 - Add crawler adapters behind a shared interface.
 - Normalize jobs into `source`, `external_id`, `title`, `company`, `location`, `url`, `description`, `salary`, and `posted_at`.
@@ -39,7 +47,7 @@ Next improvements:
 
 ## Phase 3 - Telegram Notifications
 
-Status: in progress.
+Status: MVP done; dashboard/history polish in progress.
 
 - Send top matches through Telegram Bot API.
 - Read `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` from `.env` or the environment.
@@ -51,12 +59,12 @@ Status: in progress.
 
 Next improvements:
 
-- Add notification history to the dashboard.
-- Support a daily digest summary when there are no new jobs, if desired.
+- Expand notification history analytics in the dashboard.
+- Add more feedback-driven ranking rules.
 
 ## Phase 4 - Airflow Pipeline
 
-Status: in progress.
+Status: MVP done; production hardening in progress.
 
 Target DAG:
 
@@ -87,7 +95,7 @@ Next improvements:
 
 ## Phase 5 - Web Dashboard
 
-Status: in progress.
+Status: MVP done; UX polish in progress.
 
 - FastAPI backend.
 - React dashboard.
@@ -106,12 +114,12 @@ Next improvements:
 
 ## Phase 6 - Matching Quality
 
-Status: planned.
+Status: partially done; ranking quality improvements planned.
 
 - Detect seniority and role type.
 - Separate must-have skills from nice-to-have skills.
 - Explain matched and missing skills more clearly.
-- Add LLM-based job analysis with structured JSON output.
+- Improve LLM-based job analysis prompts and structured JSON validation.
 - Keep deterministic keyword scoring as the fallback path.
 
 ## Phase 7 - Production-Minded Deployment

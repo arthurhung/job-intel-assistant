@@ -4,6 +4,22 @@ A scheduled job intelligence assistant that crawls Taiwan and open-remote job so
 
 The long-term goal is a hands-off job alert pipeline: Airflow runs the workflow daily, filters out low-signal roles, and pushes only relevant opportunities to Telegram.
 
+## Demo Evidence
+
+Dashboard:
+
+![Dashboard screenshot](docs/screenshots/dashboard.png)
+
+Airflow DAG:
+
+![Airflow DAG screenshot](docs/screenshots/airflow_dag.png)
+
+Sample output:
+
+- [reports/sample_match_report.md](reports/sample_match_report.md)
+
+MVP status: the local crawler, matcher, dashboard, Airflow pipeline, LLM analysis, Telegram digest, Telegram dedupe, and Telegram feedback loop are implemented. The roadmap separates completed MVP behavior from production hardening work such as source health tracking, richer run history, authentication, and deployment polish.
+
 ## What It Does
 
 - Crawls Taiwan and open-remote job sources
