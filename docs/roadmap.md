@@ -130,8 +130,16 @@ Docker:
 
 - FastAPI backend.
 - Airflow scheduler and webserver.
-- SQLite for local development, PostgreSQL later.
+- SQLite for local development.
+- PostgreSQL for cloud deployment, concurrent runs, and future multi-user usage.
 - Mounted data and reports directories.
+
+Database migration path:
+
+- Keep SQLAlchemy models as the database boundary.
+- Add `JOB_INTEL_DATABASE_URL` when PostgreSQL is introduced.
+- Use SQLite for local demos and PostgreSQL for deployed environments.
+- Add Alembic migrations before schema changes become frequent.
 
 Kubernetes:
 

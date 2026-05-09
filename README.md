@@ -58,6 +58,23 @@ python -m job_intel run-pipeline `
 
 For daily automation, run the Airflow Docker setup and enable Telegram notification in `airflow/.env`.
 
+## Quality Checks
+
+Install development dependencies:
+
+```powershell
+python -m pip install -e ".[dev]"
+```
+
+Run tests and linting:
+
+```powershell
+python -m pytest
+python -m ruff check src tests
+```
+
+GitHub Actions runs the same checks on pushes and pull requests.
+
 ## Web Dashboard
 
 Run the FastAPI API server:

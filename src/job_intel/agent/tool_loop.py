@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Protocol
 
 from job_intel.core.job_filters import filter_taiwan_or_remote_jobs
-from job_intel.core.models import JobPosting, MatchResult
+from job_intel.core.models import MatchResult
 from job_intel.core.skills import extract_skills
 from job_intel.crawlers.job104 import Job104Crawler
 from job_intel.db import session

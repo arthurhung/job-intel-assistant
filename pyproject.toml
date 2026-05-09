@@ -5,9 +5,20 @@ description = "A small job intelligence assistant for importing, matching, and r
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
+    "pydantic>=2.0.0",
     "pypdf>=5.0.0",
     "sqlalchemy>=2.0.0",
     "uvicorn[standard]>=0.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27.0",
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+airflow = [
+    "apache-airflow>=3.2.0",
 ]
 
 [project.scripts]
@@ -18,3 +29,10 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
